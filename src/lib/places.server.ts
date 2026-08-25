@@ -133,8 +133,8 @@ export async function searchNearby(input: {
 
 export async function placeDetails(input: {
   placeId: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | undefined;
+  longitude?: number | undefined;
 }): Promise<Place> {
   const key = `details:${input.placeId}`;
   let place = cacheGet<Place>(key);
