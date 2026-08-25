@@ -27,6 +27,9 @@ export interface Place {
   openNow: boolean | null;
   typeLabel: string | null;
   distanceMeters: number | null;
+  phone?: string | null;
+  website?: string | null;
+  openingHours?: string[] | null;
 }
 
 export function formatDistance(meters: number | null): string {
