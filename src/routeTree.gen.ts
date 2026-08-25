@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
+import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AjustesRoute = AjustesRouteImport.update({
   path: '/ajustes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritosRoute = FavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
@@ -32,30 +38,34 @@ const FavoritosRoute = FavoritosRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
+  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
+  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
+  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ajustes' | '/favoritos'
+  fullPaths: '/' | '/ajustes' | '/entrar' | '/favoritos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ajustes' | '/favoritos'
-  id: '__root__' | '/' | '/ajustes' | '/favoritos'
+  to: '/' | '/ajustes' | '/entrar' | '/favoritos'
+  id: '__root__' | '/' | '/ajustes' | '/entrar' | '/favoritos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjustesRoute: typeof AjustesRoute
+  EntrarRoute: typeof EntrarRoute
   FavoritosRoute: typeof FavoritosRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjustesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favoritos': {
       id: '/favoritos'
       path: '/favoritos'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjustesRoute: AjustesRoute,
+  EntrarRoute: EntrarRoute,
   FavoritosRoute: FavoritosRoute,
 }
 export const routeTree = rootRouteImport
