@@ -141,6 +141,12 @@ export async function placeDetails(input: {
 
   if (!place) {
     const { lovableKey, mapsKey } = credentials();
+    const detailsMask = [
+      FIELD_MASK.replaceAll("places.", ""),
+      "nationalPhoneNumber",
+      "websiteUri",
+      "currentOpeningHours.weekdayDescriptions",
+    ].join(",");
     const data = await handleResponse(
       await fetch(
         `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(input.placeId)}?languageCode=pt-BR`,
@@ -148,14 +154,24 @@ export async function placeDetails(input: {
           headers: {
             Authorization: `Bearer ${lovableKey}`,
             "X-Connection-Api-Key": mapsKey,
-            "X-Goog-FieldMask": FIELD_MASK.replaceAll("places.", ""),
+            "X-Goog-FieldMask": detailsMask,
           },
         },
       ),
     );
-    const mapped = mapPlace(data as RawPlace);
+    const raw = data as RawPlace & {
+      nationalPhoneNumber?: string;
+      websiteUri?: string;
+      currentOpeningHours?: { openNow?: boolean; weekdayDescriptions?: string[] };
+    };
+    const mapped = mapPlace(raw);
     if (!mapped) throw new Error("Local não encontrado.");
-    place = mapped;
+    place = {
+      ...mapped,
+      phone: raw.nationalPhoneNumber ?? null,
+      website: raw.websiteUri ?? null,
+      openingHours: raw.currentOpeningHours?.weekdayDescriptions ?? null,
+    };
     cacheSet(key, place);
   }
 
