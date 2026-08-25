@@ -9,9 +9,9 @@ export function AppShell({
   action,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
   children: ReactNode;
-  action?: ReactNode;
+  action?: ReactNode | undefined;
 }) {
   return (
     <div className="min-h-screen bg-background pb-24">
