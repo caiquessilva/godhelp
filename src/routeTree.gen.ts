@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as LocalPlaceIdRouteImport } from './routes/local.$placeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocalPlaceIdRoute = LocalPlaceIdRouteImport.update({
+  id: '/local/$placeId',
+  path: '/local/$placeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,15 @@ export interface FileRoutesById {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ajustes' | '/entrar' | '/favoritos'
+  fullPaths: '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ajustes' | '/entrar' | '/favoritos'
-  id: '__root__' | '/' | '/ajustes' | '/entrar' | '/favoritos'
+  to: '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
+  id:
+    '__root__' | '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +77,7 @@ export interface RootRouteChildren {
   AjustesRoute: typeof AjustesRoute
   EntrarRoute: typeof EntrarRoute
   FavoritosRoute: typeof FavoritosRoute
+  LocalPlaceIdRoute: typeof LocalPlaceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +110,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/local/$placeId': {
+      id: '/local/$placeId'
+      path: '/local/$placeId'
+      fullPath: '/local/$placeId'
+      preLoaderRoute: typeof LocalPlaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +125,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjustesRoute: AjustesRoute,
   EntrarRoute: EntrarRoute,
   FavoritosRoute: FavoritosRoute,
+  LocalPlaceIdRoute: LocalPlaceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
