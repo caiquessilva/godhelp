@@ -30,6 +30,7 @@ export interface Place {
   phone?: string | null;
   website?: string | null;
   openingHours?: string[] | null;
+  photoName?: string | null;
 }
 
 export function formatDistance(meters: number | null): string {
@@ -54,15 +55,40 @@ export function haversineMeters(
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export function directionsUrl(place: {
+type RoutablePlace = {
   name: string;
   latitude?: number | null;
   longitude?: number | null;
   address?: string | null;
-}): string {
-  if (place.latitude != null && place.longitude != null) {
+};
+
+function hasCoords(place: RoutablePlace): place is RoutablePlace & { latitude: number; longitude: number } {
+  return place.latitude != null && place.longitude != null;
+}
+
+export function directionsUrl(place: RoutablePlace): string {
+  if (hasCoords(place)) {
     return `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`;
   }
   const q = encodeURIComponent(place.address ?? place.name);
   return `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+}
+
+export function appleMapsUrl(place: RoutablePlace): string {
+  if (hasCoords(place)) {
+    return `https://maps.apple.com/?daddr=${place.latitude},${place.longitude}`;
+  }
+  return `https://maps.apple.com/?q=${encodeURIComponent(place.address ?? place.name)}`;
+}
+
+export function wazeUrl(place: RoutablePlace): string {
+  if (hasCoords(place)) {
+    return `https://waze.com/ul?ll=${place.latitude},${place.longitude}&navigate=yes`;
+  }
+  return `https://waze.com/ul?q=${encodeURIComponent(place.address ?? place.name)}`;
+}
+
+export function mapEmbedUrl(place: RoutablePlace): string | null {
+  if (!hasCoords(place)) return null;
+  return `https://www.google.com/maps?q=${place.latitude},${place.longitude}&z=16&output=embed`;
 }

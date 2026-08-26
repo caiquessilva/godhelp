@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as ApiPlacePhotoRouteImport } from './routes/api/place-photo'
 import { Route as LocalPlaceIdRouteImport } from './routes/local.$placeId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlacePhotoRoute = ApiPlacePhotoRouteImport.update({
+  id: '/api/place-photo',
+  path: '/api/place-photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LocalPlaceIdRoute = LocalPlaceIdRouteImport.update({
   id: '/local/$placeId',
   path: '/local/$placeId',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRoutesById {
@@ -61,15 +69,34 @@ export interface FileRoutesById {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
+  fullPaths:
+    | '/'
+    | '/ajustes'
+    | '/entrar'
+    | '/favoritos'
+    | '/api/place-photo'
+    | '/local/$placeId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
+  to:
+    | '/'
+    | '/ajustes'
+    | '/entrar'
+    | '/favoritos'
+    | '/api/place-photo'
+    | '/local/$placeId'
   id:
-    '__root__' | '/' | '/ajustes' | '/entrar' | '/favoritos' | '/local/$placeId'
+    | '__root__'
+    | '/'
+    | '/ajustes'
+    | '/entrar'
+    | '/favoritos'
+    | '/api/place-photo'
+    | '/local/$placeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +104,7 @@ export interface RootRouteChildren {
   AjustesRoute: typeof AjustesRoute
   EntrarRoute: typeof EntrarRoute
   FavoritosRoute: typeof FavoritosRoute
+  ApiPlacePhotoRoute: typeof ApiPlacePhotoRoute
   LocalPlaceIdRoute: typeof LocalPlaceIdRoute
 }
 
@@ -110,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/place-photo': {
+      id: '/api/place-photo'
+      path: '/api/place-photo'
+      fullPath: '/api/place-photo'
+      preLoaderRoute: typeof ApiPlacePhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/local/$placeId': {
       id: '/local/$placeId'
       path: '/local/$placeId'
@@ -125,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjustesRoute: AjustesRoute,
   EntrarRoute: EntrarRoute,
   FavoritosRoute: FavoritosRoute,
+  ApiPlacePhotoRoute: ApiPlacePhotoRoute,
   LocalPlaceIdRoute: LocalPlaceIdRoute,
 }
 export const routeTree = rootRouteImport
