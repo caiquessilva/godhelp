@@ -146,6 +146,7 @@ export async function placeDetails(input: {
       "nationalPhoneNumber",
       "websiteUri",
       "currentOpeningHours.weekdayDescriptions",
+      "photos",
     ].join(",");
     const data = await handleResponse(
       await fetch(
@@ -163,6 +164,7 @@ export async function placeDetails(input: {
       nationalPhoneNumber?: string;
       websiteUri?: string;
       currentOpeningHours?: { openNow?: boolean; weekdayDescriptions?: string[] };
+      photos?: { name?: string }[];
     };
     const mapped = mapPlace(raw);
     if (!mapped) throw new Error("Local não encontrado.");
@@ -171,6 +173,7 @@ export async function placeDetails(input: {
       phone: raw.nationalPhoneNumber ?? null,
       website: raw.websiteUri ?? null,
       openingHours: raw.currentOpeningHours?.weekdayDescriptions ?? null,
+      photoName: raw.photos?.[0]?.name ?? null,
     };
     cacheSet(key, place);
   }
