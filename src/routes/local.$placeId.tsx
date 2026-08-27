@@ -133,7 +133,7 @@ function PlaceDetailPage() {
 
   return (
     <AppShell
-      title={place?.name ?? "Local"}
+      title={place ? titleCase(place.name) : "Local"}
       subtitle={category ? categoryLabel(category) : undefined}
       hideNav
       leading={
