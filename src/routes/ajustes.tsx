@@ -40,7 +40,7 @@ function SettingsPage() {
               key={option.value}
               type="button"
               onClick={() => setTheme(option.value)}
-              className={`flex-1 rounded-xl px-3 py-3 text-sm font-semibold ${
+              className={`flex-1 rounded-full px-3 py-3 text-sm font-semibold ${
                 theme === option.value
                   ? "bg-foreground text-background"
                   : "border border-border bg-card text-muted-foreground"
@@ -63,7 +63,7 @@ function SettingsPage() {
                 await signOut();
                 await navigate({ to: "/" });
               }}
-              className="mt-3 w-full rounded-xl border border-border py-3 text-sm font-bold"
+              className="mt-3 w-full rounded-full border border-border py-3 text-sm font-bold"
             >
               Sair
             </button>
@@ -71,7 +71,7 @@ function SettingsPage() {
         ) : (
           <Link
             to="/entrar"
-            className="mt-2 flex justify-center rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground"
+            className="mt-2 flex justify-center rounded-full bg-primary py-4 text-sm font-bold text-primary-foreground"
           >
             Entrar ou criar conta
           </Link>

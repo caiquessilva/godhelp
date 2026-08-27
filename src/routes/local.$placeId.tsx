@@ -22,6 +22,7 @@ import {
   categoryLabel,
   directionsUrl,
   mapEmbedUrl,
+  titleCase,
   wazeUrl,
   type Place,
 } from "@/lib/places";
@@ -132,7 +133,7 @@ function PlaceDetailPage() {
 
   return (
     <AppShell
-      title={place?.name ?? "Local"}
+      title={place ? titleCase(place.name) : "Local"}
       subtitle={category ? categoryLabel(category) : undefined}
       hideNav
       leading={
