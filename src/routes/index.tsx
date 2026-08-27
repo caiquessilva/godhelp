@@ -125,9 +125,15 @@ function NearbyPage() {
 
       <div className="mt-4">
         {!coords ? (
-          <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Toque em “Usar minha localização” para ver o que está perto.
-          </p>
+          <div className="flex flex-col items-center gap-3 py-10 text-center">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <LocateFixed className="h-6 w-6 text-muted-foreground" aria-hidden />
+            </span>
+            <p className="text-sm text-muted-foreground">
+              Toque no ícone de localização para ver o que está perto.
+            </p>
+          </div>
+
         ) : placesQuery.isPending ? (
           <p className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Buscando…
