@@ -65,36 +65,35 @@ function NearbyPage() {
 
   return (
     <AppShell title="Perto de mim" subtitle={coords?.label ?? "Onde você está agora"}>
-      <button
-        type="button"
-        onClick={locate}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 text-base font-bold text-primary-foreground transition-opacity active:opacity-80"
-      >
-        {status === "loading" ? (
-          <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-        ) : (
-          <LocateFixed className="h-5 w-5" aria-hidden />
-        )}
-        Usar minha localização
-      </button>
-
       <form
-        className="mt-3 flex gap-2"
+        className="flex items-center gap-2 rounded-2xl border border-input bg-card px-3 py-1.5 focus-within:border-primary"
         onSubmit={(event) => {
           event.preventDefault();
           if (address.trim().length >= 3) addressMutation.mutate(address.trim());
         }}
       >
+        <button
+          type="button"
+          onClick={locate}
+          aria-label="Usar minha localização"
+          className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
+        >
+          {status === "loading" ? (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+          ) : (
+            <LocateFixed className="h-5 w-5" aria-hidden />
+          )}
+        </button>
         <input
           value={address}
           onChange={(event) => setAddress(event.target.value)}
-          placeholder="Ou digite um endereço"
-          className="min-w-0 flex-1 rounded-2xl border border-input bg-card px-4 py-3 text-base outline-none focus:border-primary"
+          placeholder="Buscar endereço ou usar sua localização"
+          className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none"
         />
         <button
           type="submit"
           aria-label="Buscar endereço"
-          className="rounded-2xl border border-input bg-card px-4 text-foreground"
+          className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
         >
           {addressMutation.isPending ? (
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
@@ -105,6 +104,7 @@ function NearbyPage() {
       </form>
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+
 
       <div className="mt-4 flex gap-2">
         {CATEGORIES.map((item) => (
