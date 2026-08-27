@@ -112,7 +112,7 @@ function NearbyPage() {
             key={item.id}
             type="button"
             onClick={() => setCategory(item.id)}
-            className={`flex-1 rounded-xl px-2 py-3 text-sm font-semibold transition-colors ${
+            className={`flex-1 rounded-full px-2 py-3 text-sm font-semibold transition-colors ${
               category === item.id
                 ? "bg-foreground text-background"
                 : "border border-border bg-card text-muted-foreground"
