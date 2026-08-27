@@ -33,7 +33,37 @@ export interface Place {
   photoName?: string | null;
 }
 
+const LOWER_WORDS = new Set([
+  "de", "da", "do", "das", "dos", "e", "em", "no", "na", "nos", "nas", "a", "o", "as", "os",
+  "para", "por", "com", "the", "of",
+]);
+
+/** Normaliza títulos em CAIXA ALTA para Title Case, preservando siglas curtas. */
+export function titleCase(value: string): string {
+  const hasLower = /[a-zà-ÿ]/.test(value);
+  return value
+    .split(/(\s+)/)
+    .map((token, index) => {
+      if (/^\s+$/.test(token) || token.length === 0) return token;
+      // preserva siglas curtas totalmente maiúsculas (ex.: SP, UFRJ)
+      if (!hasLower && token.length <= 3 && /^[A-ZÀ-Ý0-9.]+$/.test(token)) return token;
+      if (hasLower && token === token.toUpperCase() && /[A-ZÀ-Ý]/.test(token) && token.length <= 4) {
+        return token;
+      }
+      const lower = token.toLocaleLowerCase("pt-BR");
+      if (index > 0 && LOWER_WORDS.has(lower)) return lower;
+      return lower.replace(/^[\p{L}]/u, (c) => c.toLocaleUpperCase("pt-BR"));
+    })
+    .join("");
+}
+
+export function placePhotoUrl(photoName?: string | null): string | null {
+  if (!photoName) return null;
+  return `/api/place-photo?name=${encodeURIComponent(photoName)}`;
+}
+
 export function formatDistance(meters: number | null): string {
+
   if (meters == null) return "";
   if (meters < 1000) return `${Math.round(meters / 10) * 10} m`;
   return `${(meters / 1000).toFixed(1).replace(".", ",")} km`;
