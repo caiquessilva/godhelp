@@ -40,7 +40,7 @@ function SettingsPage() {
               key={option.value}
               type="button"
               onClick={() => setTheme(option.value)}
-              className={`flex-1 rounded-xl px-3 py-3 text-sm font-semibold ${
+              className={`flex-1 rounded-full px-3 py-3 text-sm font-semibold ${
                 theme === option.value
                   ? "bg-foreground text-background"
                   : "border border-border bg-card text-muted-foreground"
