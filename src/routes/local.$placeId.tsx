@@ -22,6 +22,7 @@ import {
   categoryLabel,
   directionsUrl,
   mapEmbedUrl,
+  titleCase,
   wazeUrl,
   type Place,
 } from "@/lib/places";
