@@ -4,7 +4,7 @@ import { Heart, Navigation } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites } from "@/hooks/useFavorites";
-import { categoryLabel, directionsUrl } from "@/lib/places";
+import { categoryLabel, directionsUrl, titleCase } from "@/lib/places";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/favoritos")({
