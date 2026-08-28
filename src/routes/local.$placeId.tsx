@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
+import { StatusBadge } from "@/components/PlaceCard";
 import { useFavorites } from "@/hooks/useFavorites";
+import { haptic } from "@/lib/haptics";
 import {
   appleMapsUrl,
   categoryLabel,
@@ -147,7 +149,17 @@ function PlaceDetailPage() {
       }
     >
       {detailsQuery.isPending ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">Carregando…</p>
+        <div className="animate-shimmer space-y-4" aria-hidden>
+          <div className="aspect-[16/9] w-full rounded-2xl bg-muted" />
+          <div className="aspect-[16/10] w-full rounded-2xl bg-muted" />
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="h-20 rounded-2xl bg-muted" />
+            ))}
+          </div>
+          <div className="h-24 rounded-2xl bg-muted" />
+          <div className="h-14 rounded-2xl bg-muted" />
+        </div>
       ) : !place ? (
         <p className="py-8 text-center text-sm text-destructive">Local não encontrado.</p>
       ) : (
@@ -173,12 +185,16 @@ function PlaceDetailPage() {
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => toggle.mutate({ place, category: category || "parques" })}
+              onClick={() => {
+                haptic(isFavorite ? 8 : [12, 40, 12]);
+                toggle.mutate({ place, category: category || "parques" });
+              }}
               aria-pressed={isFavorite}
               className="flex flex-col items-center gap-1 rounded-2xl border border-border bg-card py-3 text-xs font-semibold"
             >
               <Heart
-                className={`h-5 w-5 ${isFavorite ? "fill-primary text-primary" : "text-muted-foreground"}`}
+                key={String(isFavorite)}
+                className={`h-5 w-5 animate-pop ${isFavorite ? "fill-primary text-primary" : "text-muted-foreground"}`}
                 aria-hidden
               />
               {isFavorite ? "Salvo" : "Salvar"}
@@ -221,17 +237,16 @@ function PlaceDetailPage() {
                   {place.rating.toFixed(1).replace(".", ",")}
                 </span>
               ) : null}
-              {place.openNow != null ? (
-                <span className={place.openNow ? "text-primary" : ""}>
-                  {place.openNow ? "Aberto agora" : "Fechado agora"}
-                </span>
-              ) : null}
+              {place.openNow != null ? <StatusBadge openNow={place.openNow} /> : null}
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => setRouteSheetOpen(true)}
+            onClick={() => {
+              haptic(10);
+              setRouteSheetOpen(true);
+            }}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-base font-bold text-primary-foreground"
           >
             <Navigation className="h-5 w-5" aria-hidden />

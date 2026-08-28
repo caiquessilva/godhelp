@@ -44,6 +44,33 @@ function MapSkeleton() {
   );
 }
 
+function PlaceListSkeleton() {
+  return (
+    <ul className="space-y-3" aria-hidden>
+      {[0, 1, 2, 3].map((item) => (
+        <li
+          key={item}
+          className="animate-shimmer rounded-2xl border border-border bg-card p-3"
+          style={{ animationDelay: `${item * 0.12}s` }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="block h-16 w-16 shrink-0 rounded-xl bg-muted" />
+            <span className="flex-1 space-y-2 py-1">
+              <span className="block h-4 w-3/4 rounded-full bg-muted" />
+              <span className="block h-3 w-1/2 rounded-full bg-muted" />
+              <span className="block h-3 w-2/3 rounded-full bg-muted" />
+            </span>
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="block h-10 w-10 rounded-full bg-muted" />
+              <span className="block h-10 w-10 rounded-full bg-muted" />
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function NearbyPage() {
   const { coords, status, error, locate, setCoords } = useGeo();
   const [category, setCategory] = useState<CategoryId>("parques");
@@ -220,9 +247,7 @@ function NearbyPage() {
             </p>
           </div>
         ) : placesQuery.isPending ? (
-          <p className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Buscando…
-          </p>
+          view === "mapa" ? <MapSkeleton /> : <PlaceListSkeleton />
         ) : placesQuery.isError ? (
           <p className="py-6 text-center text-sm text-destructive">
             Não foi possível buscar os locais agora.

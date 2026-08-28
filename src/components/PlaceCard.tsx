@@ -1,7 +1,24 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, MapPin, Navigation, Star } from "lucide-react";
 
+import { haptic } from "@/lib/haptics";
 import { directionsUrl, formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
+
+export function StatusBadge({ openNow }: { openNow: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
+        openNow ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${openNow ? "bg-primary" : "bg-muted-foreground"}`}
+        aria-hidden
+      />
+      {openNow ? "Aberto" : "Fechado"}
+    </span>
+  );
+}
 
 export function PlaceCard({
   place,
@@ -53,11 +70,7 @@ export function PlaceCard({
                   {place.rating.toFixed(1).replace(".", ",")}
                 </span>
               ) : null}
-              {place.openNow != null ? (
-                <span className={place.openNow ? "text-primary" : ""}>
-                  {place.openNow ? "Aberto" : "Fechado"}
-                </span>
-              ) : null}
+              {place.openNow != null ? <StatusBadge openNow={place.openNow} /> : null}
             </span>
             {place.address ? (
               <span className="mt-1 block truncate text-xs text-muted-foreground">
@@ -69,12 +82,16 @@ export function PlaceCard({
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            onClick={onToggleFavorite}
+            onClick={() => {
+              haptic(isFavorite ? 8 : [12, 40, 12]);
+              onToggleFavorite();
+            }}
             aria-label={isFavorite ? "Remover dos favoritos" : "Salvar nos favoritos"}
             className="rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-accent"
           >
             <Heart
-              className={`h-5 w-5 ${isFavorite ? "fill-primary text-primary" : ""}`}
+              key={String(isFavorite)}
+              className={`h-5 w-5 animate-pop ${isFavorite ? "fill-primary text-primary" : ""}`}
               aria-hidden
             />
           </button>
@@ -82,6 +99,7 @@ export function PlaceCard({
             href={directionsUrl(place)}
             target="_blank"
             rel="noreferrer"
+            onClick={() => haptic(10)}
             aria-label={`Rota até ${titleCase(place.name)}`}
             className="rounded-full bg-primary p-2.5 text-primary-foreground"
           >
