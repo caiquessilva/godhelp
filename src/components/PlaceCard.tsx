@@ -70,11 +70,7 @@ export function PlaceCard({
                   {place.rating.toFixed(1).replace(".", ",")}
                 </span>
               ) : null}
-              {place.openNow != null ? (
-                <span className={place.openNow ? "text-primary" : ""}>
-                  {place.openNow ? "Aberto" : "Fechado"}
-                </span>
-              ) : null}
+              {place.openNow != null ? <StatusBadge openNow={place.openNow} /> : null}
             </span>
             {place.address ? (
               <span className="mt-1 block truncate text-xs text-muted-foreground">
@@ -86,12 +82,16 @@ export function PlaceCard({
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
-            onClick={onToggleFavorite}
+            onClick={() => {
+              haptic(isFavorite ? 8 : [12, 40, 12]);
+              onToggleFavorite();
+            }}
             aria-label={isFavorite ? "Remover dos favoritos" : "Salvar nos favoritos"}
             className="rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-accent"
           >
             <Heart
-              className={`h-5 w-5 ${isFavorite ? "fill-primary text-primary" : ""}`}
+              key={String(isFavorite)}
+              className={`h-5 w-5 animate-pop ${isFavorite ? "fill-primary text-primary" : ""}`}
               aria-hidden
             />
           </button>
@@ -99,6 +99,7 @@ export function PlaceCard({
             href={directionsUrl(place)}
             target="_blank"
             rel="noreferrer"
+            onClick={() => haptic(10)}
             aria-label={`Rota até ${titleCase(place.name)}`}
             className="rounded-full bg-primary p-2.5 text-primary-foreground"
           >
