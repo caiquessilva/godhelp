@@ -1,7 +1,24 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, MapPin, Navigation, Star } from "lucide-react";
 
+import { haptic } from "@/lib/haptics";
 import { directionsUrl, formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
+
+export function StatusBadge({ openNow }: { openNow: boolean }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold ${
+        openNow ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${openNow ? "bg-primary" : "bg-muted-foreground"}`}
+        aria-hidden
+      />
+      {openNow ? "Aberto" : "Fechado"}
+    </span>
+  );
+}
 
 export function PlaceCard({
   place,
