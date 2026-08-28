@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Loader2, LocateFixed, Search } from "lucide-react";
+import { Suspense, lazy, useRef, useState } from "react";
+import { List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -11,6 +12,8 @@ import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId } from "@/lib/places";
 import { fetchNearbyPlaces, geocode } from "@/lib/places.functions";
+
+const PlacesMap = lazy(() => import("@/components/PlacesMap"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,9 +34,20 @@ export const Route = createFileRoute("/")({
   component: NearbyPage,
 });
 
+const PULL_THRESHOLD = 70;
+
+function MapSkeleton() {
+  return (
+    <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-border bg-card">
+      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+    </div>
+  );
+}
+
 function NearbyPage() {
   const { coords, status, error, locate, setCoords } = useGeo();
   const [category, setCategory] = useState<CategoryId>("parques");
+  const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
   const nearbyFn = useServerFn(fetchNearbyPlaces);
   const geocodeFn = useServerFn(geocode);
@@ -62,6 +76,39 @@ function NearbyPage() {
     },
     onError: () => toast.error("Endereço não encontrado. Tente outro."),
   });
+
+  // pull-to-refresh
+  const startY = useRef<number | null>(null);
+  const [pull, setPull] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onTouchStart = (event: React.TouchEvent) => {
+    if (view !== "lista" || refreshing) return;
+    if (window.scrollY > 0) return;
+    startY.current = event.touches[0]?.clientY ?? null;
+  };
+
+  const onTouchMove = (event: React.TouchEvent) => {
+    if (startY.current == null) return;
+    const delta = (event.touches[0]?.clientY ?? 0) - startY.current;
+    setPull(delta > 0 ? Math.min(delta * 0.5, PULL_THRESHOLD + 20) : 0);
+  };
+
+  const onTouchEnd = async () => {
+    const shouldRefresh = pull >= PULL_THRESHOLD;
+    startY.current = null;
+    setPull(0);
+    if (!shouldRefresh) return;
+    setRefreshing(true);
+    locate();
+    try {
+      await placesQuery.refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const indicatorVisible = refreshing || pull > 0;
 
   return (
     <AppShell title="Perto de mim" subtitle={coords?.label ?? "Onde você está agora"}>
@@ -105,7 +152,6 @@ function NearbyPage() {
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
 
-
       <div className="mt-4 flex gap-2">
         {CATEGORIES.map((item) => (
           <button
@@ -123,7 +169,47 @@ function NearbyPage() {
         ))}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3 flex gap-2 rounded-full border border-border bg-card p-1">
+        {(
+          [
+            { id: "lista", label: "Lista", Icon: List },
+            { id: "mapa", label: "Mapa", Icon: MapIcon },
+          ] as const
+        ).map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setView(id)}
+            aria-pressed={view === id}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
+              view === id ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div
+        className="mt-4"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={() => void onTouchEnd()}
+      >
+        {view === "lista" && indicatorVisible ? (
+          <div
+            className="flex items-center justify-center overflow-hidden transition-[height]"
+            style={{ height: refreshing ? 36 : pull }}
+          >
+            <Loader2
+              className={`h-5 w-5 text-primary ${refreshing ? "animate-spin" : ""}`}
+              style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)` }}
+              aria-hidden
+            />
+          </div>
+        ) : null}
+
         {!coords ? (
           <div className="flex flex-col items-center gap-3 py-10 text-center">
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
@@ -133,7 +219,6 @@ function NearbyPage() {
               Toque no ícone de localização para ver o que está perto.
             </p>
           </div>
-
         ) : placesQuery.isPending ? (
           <p className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Buscando…
@@ -142,6 +227,16 @@ function NearbyPage() {
           <p className="py-6 text-center text-sm text-destructive">
             Não foi possível buscar os locais agora.
           </p>
+        ) : view === "mapa" ? (
+          <ClientOnly fallback={<MapSkeleton />}>
+            <Suspense fallback={<MapSkeleton />}>
+              <PlacesMap
+                places={placesQuery.data}
+                center={{ latitude: coords.latitude, longitude: coords.longitude }}
+                category={category}
+              />
+            </Suspense>
+          </ClientOnly>
         ) : placesQuery.data.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             Nada encontrado num raio de 3 km.
