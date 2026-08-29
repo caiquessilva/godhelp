@@ -50,6 +50,36 @@ export type Database = {
         }
         Relationships: []
       }
+      places_cache: {
+        Row: {
+          category: string
+          created_at: string
+          expires_at: string
+          geohash: string
+          hits: number
+          payload: Json
+          radius: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          expires_at: string
+          geohash: string
+          hits?: number
+          payload: Json
+          radius: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          expires_at?: string
+          geohash?: string
+          hits?: number
+          payload?: Json
+          radius?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
