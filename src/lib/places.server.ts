@@ -1,4 +1,6 @@
 import { CATEGORIES, haversineMeters, type CategoryId, type Place } from "./places";
+import { geohashCenter, geohashEncode } from "./geohash";
+import { readCache, writeCache } from "./places-cache.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const FIELD_MASK =
@@ -78,6 +80,19 @@ function mapPlace(raw: RawPlace, origin?: { lat: number; lng: number }): Place |
   };
 }
 
+/** Recalcula distância/ordem a partir da posição real do usuário. */
+function rankFor(places: Place[], lat: number, lng: number): Place[] {
+  return places
+    .map((place) => ({
+      ...place,
+      distanceMeters:
+        place.latitude != null && place.longitude != null
+          ? Math.round(haversineMeters(lat, lng, place.latitude, place.longitude))
+          : null,
+    }))
+    .sort((a, b) => (a.distanceMeters ?? 1e9) - (b.distanceMeters ?? 1e9));
+}
+
 export async function searchNearby(input: {
   latitude: number;
   longitude: number;
@@ -85,16 +100,22 @@ export async function searchNearby(input: {
   radius: number;
 }): Promise<Place[]> {
   const types = CATEGORIES.find((c) => c.id === input.category)?.googleTypes ?? ["park"];
-  // Round coordinates (~110 m) so repeated lookups from the same spot reuse the cache.
-  const key = [
-    "nearby",
-    input.category,
-    input.latitude.toFixed(3),
-    input.longitude.toFixed(3),
-    input.radius,
-  ].join(":");
-  const cached = cacheGet<Place[]>(key);
-  if (cached) return cached;
+
+  // Agrupa usuários próximos numa célula de geohash: a mesma região reaproveita
+  // a mesma resposta, tanto na memória do worker quanto no cache compartilhado.
+  const geohash = geohashEncode(input.latitude, input.longitude, 6);
+  const center = geohashCenter(geohash);
+  const cacheKey = { geohash, category: input.category, radius: input.radius };
+  const memoryKey = ["nearby", geohash, input.category, input.radius].join(":");
+
+  const memoryHit = cacheGet<Place[]>(memoryKey);
+  if (memoryHit) return rankFor(memoryHit, input.latitude, input.longitude);
+
+  const sharedHit = await readCache(cacheKey);
+  if (sharedHit) {
+    cacheSet(memoryKey, sharedHit);
+    return rankFor(sharedHit, input.latitude, input.longitude);
+  }
 
   const { lovableKey, mapsKey } = credentials();
   const data = await handleResponse(
@@ -113,7 +134,8 @@ export async function searchNearby(input: {
         rankPreference: "DISTANCE",
         locationRestriction: {
           circle: {
-            center: { latitude: input.latitude, longitude: input.longitude },
+            // centro da célula: mantém a resposta reutilizável por toda a região
+            center: { latitude: center.latitude, longitude: center.longitude },
             radius: input.radius,
           },
         },
@@ -121,15 +143,15 @@ export async function searchNearby(input: {
     }),
   );
 
-  const origin = { lat: input.latitude, lng: input.longitude };
   const places = ((data as { places?: RawPlace[] }).places ?? [])
-    .map((raw) => mapPlace(raw, origin))
-    .filter((p): p is Place => p !== null)
-    .sort((a, b) => (a.distanceMeters ?? 1e9) - (b.distanceMeters ?? 1e9));
+    .map((raw) => mapPlace(raw))
+    .filter((p): p is Place => p !== null);
 
-  cacheSet(key, places);
-  return places;
+  cacheSet(memoryKey, places);
+  await writeCache(cacheKey, places);
+  return rankFor(places, input.latitude, input.longitude);
 }
+
 
 export async function placeDetails(input: {
   placeId: string;
