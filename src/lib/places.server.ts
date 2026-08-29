@@ -1,4 +1,6 @@
 import { CATEGORIES, haversineMeters, type CategoryId, type Place } from "./places";
+import { geohashCenter, geohashEncode } from "./geohash";
+import { readCache, writeCache } from "./places-cache.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const FIELD_MASK =
