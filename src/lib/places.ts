@@ -57,10 +57,11 @@ export function titleCase(value: string): string {
     .join("");
 }
 
-export function placePhotoUrl(photoName?: string | null): string | null {
+export function placePhotoUrl(photoName?: string | null, width = 160): string | null {
   if (!photoName) return null;
-  return `/api/place-photo?name=${encodeURIComponent(photoName)}`;
+  return `/api/place-photo?name=${encodeURIComponent(photoName)}&w=${width}`;
 }
+
 
 export function formatDistance(meters: number | null): string {
 
