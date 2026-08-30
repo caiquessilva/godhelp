@@ -24,6 +24,8 @@ import {
   categoryLabel,
   directionsUrl,
   mapEmbedUrl,
+  placePhotoUrl,
+
   titleCase,
   wazeUrl,
   type Place,
@@ -166,12 +168,20 @@ function PlaceDetailPage() {
         <div className="space-y-4">
           {place.photoName ? (
             <img
-              src={`/api/place-photo?name=${encodeURIComponent(place.photoName)}`}
+              src={placePhotoUrl(place.photoName, 800) ?? ""}
+              srcSet={[
+                `${placePhotoUrl(place.photoName, 480)} 480w`,
+                `${placePhotoUrl(place.photoName, 800)} 800w`,
+                `${placePhotoUrl(place.photoName, 1200)} 1200w`,
+              ].join(", ")}
+              sizes="(min-width: 640px) 640px, 100vw"
               alt={`Foto de ${place.name}`}
               loading="lazy"
+              decoding="async"
               className="aspect-[16/9] w-full rounded-2xl border border-border object-cover"
             />
           ) : null}
+
 
           {embedUrl ? (
             <iframe
