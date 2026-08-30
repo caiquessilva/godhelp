@@ -45,10 +45,14 @@ export function PlaceCard({
           {photo ? (
             <img
               src={photo}
+              srcSet={`${placePhotoUrl(place.photoName, 96)} 96w, ${placePhotoUrl(place.photoName, 160)} 160w`}
+              sizes="64px"
               alt={`Foto de ${titleCase(place.name)}`}
               loading="lazy"
+              decoding="async"
               className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
             />
+
           ) : (
             <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
               <MapPin className="h-6 w-6 text-muted-foreground" aria-hidden />
