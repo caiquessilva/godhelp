@@ -10,7 +10,10 @@ export interface CacheKey {
   radius: number;
 }
 
-export async function readCache(key: CacheKey): Promise<Place[] | null> {
+export async function readCache(
+  key: CacheKey,
+  options: { allowStale?: boolean } = {},
+): Promise<Place[] | null> {
   try {
     const { data, error } = await supabaseAdmin
       .from("places_cache")
@@ -21,7 +24,7 @@ export async function readCache(key: CacheKey): Promise<Place[] | null> {
       .maybeSingle();
 
     if (error || !data) return null;
-    if (new Date(data.expires_at).getTime() <= Date.now()) return null;
+    if (!options.allowStale && new Date(data.expires_at).getTime() <= Date.now()) return null;
     return (data.payload as unknown as Place[]) ?? null;
   } catch (cacheError) {
     console.error("places_cache read failed", cacheError);
