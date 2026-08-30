@@ -31,6 +31,8 @@ export interface Place {
   website?: string | null;
   openingHours?: string[] | null;
   photoName?: string | null;
+  /** Origem dos dados: Google, cache expirado (offline) ou OpenStreetMap. */
+  source?: "google" | "cache" | "osm";
 }
 
 const LOWER_WORDS = new Set([
