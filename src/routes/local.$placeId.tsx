@@ -24,6 +24,8 @@ import {
   categoryLabel,
   directionsUrl,
   mapEmbedUrl,
+  placePhotoUrl,
+
   titleCase,
   wazeUrl,
   type Place,
