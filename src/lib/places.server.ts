@@ -1,6 +1,7 @@
 import { CATEGORIES, haversineMeters, type CategoryId, type Place } from "./places";
 import { geohashCenter, geohashEncode } from "./geohash";
 import { readCache, writeCache } from "./places-cache.server";
+import { geocodeAddressOSM, placeDetailsOSM, searchNearbyOSM } from "./overpass.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const FIELD_MASK =
@@ -117,6 +118,41 @@ export async function searchNearby(input: {
     return rankFor(sharedHit, input.latitude, input.longitude);
   }
 
+  try {
+    const places = await searchNearbyGoogle(input, center, types);
+    cacheSet(memoryKey, places);
+    await writeCache(cacheKey, places);
+    return rankFor(places, input.latitude, input.longitude);
+  } catch (error) {
+    console.error("Google Places indisponível, aplicando fallback", error);
+  }
+
+  // 1) cache expirado da mesma região (melhor do que tela vazia)
+  const staleHit = await readCache(cacheKey, { allowStale: true });
+  if (staleHit?.length) {
+    return rankFor(
+      staleHit.map((place) => ({ ...place, source: "cache" as const })),
+      input.latitude,
+      input.longitude,
+    );
+  }
+
+  // 2) OpenStreetMap / Overpass (aberto, sem cota)
+  const osmPlaces = await searchNearbyOSM(input);
+  if (osmPlaces.length) {
+    cacheSet(memoryKey, osmPlaces);
+    return osmPlaces;
+  }
+
+  // 3) nunca quebra: lista vazia, a UI mostra o estado apropriado
+  return [];
+}
+
+async function searchNearbyGoogle(
+  input: { latitude: number; longitude: number; category: CategoryId; radius: number },
+  center: { latitude: number; longitude: number },
+  types: string[],
+): Promise<Place[]> {
   const { lovableKey, mapsKey } = credentials();
   const data = await handleResponse(
     await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
@@ -143,13 +179,10 @@ export async function searchNearby(input: {
     }),
   );
 
-  const places = ((data as { places?: RawPlace[] }).places ?? [])
+  return ((data as { places?: RawPlace[] }).places ?? [])
     .map((raw) => mapPlace(raw))
-    .filter((p): p is Place => p !== null);
-
-  cacheSet(memoryKey, places);
-  await writeCache(cacheKey, places);
-  return rankFor(places, input.latitude, input.longitude);
+    .filter((p): p is Place => p !== null)
+    .map((place) => ({ ...place, source: "google" as const }));
 }
 
 
@@ -161,43 +194,21 @@ export async function placeDetails(input: {
   const key = `details:${input.placeId}`;
   let place = cacheGet<Place>(key);
 
-  if (!place) {
-    const { lovableKey, mapsKey } = credentials();
-    const detailsMask = [
-      FIELD_MASK.replaceAll("places.", ""),
-      "nationalPhoneNumber",
-      "websiteUri",
-      "currentOpeningHours.weekdayDescriptions",
-      "photos",
-    ].join(",");
-    const data = await handleResponse(
-      await fetch(
-        `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(input.placeId)}?languageCode=pt-BR`,
-        {
-          headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": mapsKey,
-            "X-Goog-FieldMask": detailsMask,
-          },
-        },
-      ),
-    );
-    const raw = data as RawPlace & {
-      nationalPhoneNumber?: string;
-      websiteUri?: string;
-      currentOpeningHours?: { openNow?: boolean; weekdayDescriptions?: string[] };
-      photos?: { name?: string }[];
-    };
-    const mapped = mapPlace(raw);
-    if (!mapped) throw new Error("Local não encontrado.");
-    place = {
-      ...mapped,
-      phone: raw.nationalPhoneNumber ?? null,
-      website: raw.websiteUri ?? null,
-      openingHours: raw.currentOpeningHours?.weekdayDescriptions ?? null,
-      photoName: raw.photos?.[0]?.name ?? null,
-    };
+  if (!place && input.placeId.startsWith("osm:")) {
+    const osm = await placeDetailsOSM(input.placeId);
+    if (!osm) throw new Error("Local não encontrado.");
+    place = osm;
     cacheSet(key, place);
+  }
+
+  if (!place) {
+    try {
+      place = await placeDetailsGoogle(input.placeId);
+      cacheSet(key, place);
+    } catch (error) {
+      console.error("Detalhes do Google indisponíveis", error);
+      throw new Error("Não foi possível carregar este local agora. Tente novamente em instantes.");
+    }
   }
 
   if (
@@ -216,7 +227,59 @@ export async function placeDetails(input: {
   return place;
 }
 
+async function placeDetailsGoogle(placeId: string): Promise<Place> {
+  {
+    const { lovableKey, mapsKey } = credentials();
+    const detailsMask = [
+      FIELD_MASK.replaceAll("places.", ""),
+      "nationalPhoneNumber",
+      "websiteUri",
+      "currentOpeningHours.weekdayDescriptions",
+      "photos",
+    ].join(",");
+    const data = await handleResponse(
+      await fetch(
+        `${GATEWAY_URL}/places/v1/places/${encodeURIComponent(placeId)}?languageCode=pt-BR`,
+        {
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            "X-Connection-Api-Key": mapsKey,
+            "X-Goog-FieldMask": detailsMask,
+          },
+        },
+      ),
+    );
+    const raw = data as RawPlace & {
+      nationalPhoneNumber?: string;
+      websiteUri?: string;
+      currentOpeningHours?: { openNow?: boolean; weekdayDescriptions?: string[] };
+      photos?: { name?: string }[];
+    };
+    const mapped = mapPlace(raw);
+    if (!mapped) throw new Error("Local não encontrado.");
+    return {
+      ...mapped,
+      phone: raw.nationalPhoneNumber ?? null,
+      website: raw.websiteUri ?? null,
+      openingHours: raw.currentOpeningHours?.weekdayDescriptions ?? null,
+      photoName: raw.photos?.[0]?.name ?? null,
+      source: "google" as const,
+    };
+  }
+}
+
 export async function geocodeAddress(address: string) {
+  try {
+    return await geocodeAddressGoogle(address);
+  } catch (error) {
+    console.error("Geocoding do Google indisponível, usando OpenStreetMap", error);
+    const fallback = await geocodeAddressOSM(address);
+    if (!fallback) throw new Error("Endereço não encontrado.");
+    return fallback;
+  }
+}
+
+async function geocodeAddressGoogle(address: string) {
   const { lovableKey, mapsKey } = credentials();
   const data = await handleResponse(
     await fetch(
