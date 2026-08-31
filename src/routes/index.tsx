@@ -3,14 +3,14 @@ import { ClientOnly } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Suspense, lazy, useRef, useState } from "react";
-import { List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
+import { Info, List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
-import { CATEGORIES, type CategoryId } from "@/lib/places";
+import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
 import { fetchNearbyPlaces, geocode } from "@/lib/places.functions";
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
