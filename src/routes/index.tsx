@@ -3,14 +3,14 @@ import { ClientOnly } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Suspense, lazy, useRef, useState } from "react";
-import { List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
+import { Info, List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
-import { CATEGORIES, type CategoryId } from "@/lib/places";
+import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
 import { fetchNearbyPlaces, geocode } from "@/lib/places.functions";
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
@@ -68,6 +68,23 @@ function PlaceListSkeleton() {
         </li>
       ))}
     </ul>
+  );
+}
+
+function SourceNotice({ places }: { places: Place[] }) {
+  const sources = new Set(places.map((place) => place.source ?? "google"));
+  if (!sources.has("cache") && !sources.has("osm")) return null;
+  const message = sources.has("osm")
+    ? "Dados aproximados do OpenStreetMap — o Google Maps está indisponível agora."
+    : "Mostrando a última atualização salva em cache desta região.";
+  return (
+    <p
+      role="status"
+      className="mb-3 flex items-start gap-2 rounded-2xl border border-border bg-muted/60 px-3 py-2 text-xs text-muted-foreground"
+    >
+      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+      {message}
+    </p>
   );
 }
 
@@ -267,17 +284,20 @@ function NearbyPage() {
             Nada encontrado num raio de 3 km.
           </p>
         ) : (
-          <ul className="space-y-3">
-            {placesQuery.data.map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                category={category}
-                isFavorite={favoriteIds.has(place.id)}
-                onToggleFavorite={() => toggle.mutate({ place, category })}
-              />
-            ))}
-          </ul>
+          <>
+            <SourceNotice places={placesQuery.data} />
+            <ul className="space-y-3">
+              {placesQuery.data.map((place) => (
+                <PlaceCard
+                  key={place.id}
+                  place={place}
+                  category={category}
+                  isFavorite={favoriteIds.has(place.id)}
+                  onToggleFavorite={() => toggle.mutate({ place, category })}
+                />
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </AppShell>
