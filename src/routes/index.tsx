@@ -71,6 +71,23 @@ function PlaceListSkeleton() {
   );
 }
 
+function SourceNotice({ places }: { places: Place[] }) {
+  const sources = new Set(places.map((place) => place.source ?? "google"));
+  if (!sources.has("cache") && !sources.has("osm")) return null;
+  const message = sources.has("osm")
+    ? "Dados aproximados do OpenStreetMap — o Google Maps está indisponível agora."
+    : "Mostrando a última atualização salva em cache desta região.";
+  return (
+    <p
+      role="status"
+      className="mb-3 flex items-start gap-2 rounded-2xl border border-border bg-muted/60 px-3 py-2 text-xs text-muted-foreground"
+    >
+      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+      {message}
+    </p>
+  );
+}
+
 function NearbyPage() {
   const { coords, status, error, locate, setCoords } = useGeo();
   const [category, setCategory] = useState<CategoryId>("parques");
