@@ -267,17 +267,20 @@ function NearbyPage() {
             Nada encontrado num raio de 3 km.
           </p>
         ) : (
-          <ul className="space-y-3">
-            {placesQuery.data.map((place) => (
-              <PlaceCard
-                key={place.id}
-                place={place}
-                category={category}
-                isFavorite={favoriteIds.has(place.id)}
-                onToggleFavorite={() => toggle.mutate({ place, category })}
-              />
-            ))}
-          </ul>
+          <>
+            <SourceNotice places={placesQuery.data} />
+            <ul className="space-y-3">
+              {placesQuery.data.map((place) => (
+                <PlaceCard
+                  key={place.id}
+                  place={place}
+                  category={category}
+                  isFavorite={favoriteIds.has(place.id)}
+                  onToggleFavorite={() => toggle.mutate({ place, category })}
+                />
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </AppShell>
