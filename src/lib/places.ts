@@ -123,5 +123,10 @@ export function wazeUrl(place: RoutablePlace): string {
 
 export function mapEmbedUrl(place: RoutablePlace): string | null {
   if (!hasCoords(place)) return null;
-  return `https://www.google.com/maps?q=${place.latitude},${place.longitude}&z=16&output=embed`;
+  return `https://maps.google.com/maps?q=${place.latitude},${place.longitude}&z=16&output=embed`;
+}
+
+export function googleMapsSearchUrl(place: RoutablePlace): string | null {
+  if (!hasCoords(place)) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`;
 }

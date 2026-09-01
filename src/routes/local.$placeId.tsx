@@ -23,9 +23,9 @@ import {
   appleMapsUrl,
   categoryLabel,
   directionsUrl,
+  googleMapsSearchUrl,
   mapEmbedUrl,
   placePhotoUrl,
-
   titleCase,
   wazeUrl,
   type Place,
@@ -184,12 +184,36 @@ function PlaceDetailPage() {
 
 
           {embedUrl ? (
-            <iframe
-              title={`Mapa de ${place.name}`}
-              src={embedUrl}
-              loading="lazy"
-              className="aspect-[16/10] w-full rounded-2xl border border-border"
-            />
+            <div className="space-y-2">
+              <iframe
+                title={`Mapa de ${place.name}`}
+                src={embedUrl}
+                loading="lazy"
+                className="aspect-[16/10] w-full rounded-2xl border border-border"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={googleMapsSearchUrl(place) ?? directionsUrl(place)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => haptic(10)}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm font-semibold"
+                >
+                  <Navigation className="h-4 w-4 text-primary" aria-hidden />
+                  Abrir no Google Maps
+                </a>
+                <a
+                  href={wazeUrl(place)}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => haptic(10)}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm font-semibold"
+                >
+                  <Navigation className="h-4 w-4 text-primary" aria-hidden />
+                  Abrir no Waze
+                </a>
+              </div>
+            </div>
           ) : null}
 
           <div className="grid grid-cols-3 gap-2">
