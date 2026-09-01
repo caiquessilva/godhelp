@@ -23,9 +23,9 @@ import {
   appleMapsUrl,
   categoryLabel,
   directionsUrl,
+  googleMapsSearchUrl,
   mapEmbedUrl,
   placePhotoUrl,
-
   titleCase,
   wazeUrl,
   type Place,
