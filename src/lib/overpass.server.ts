@@ -115,11 +115,14 @@ export async function searchNearbyOSM(input: {
   radius: number;
 }): Promise<Place[]> {
   const filters = FILTERS[input.category] ?? FILTERS.parques;
-  const around = `${Math.round(input.radius)},${input.latitude},${input.longitude}`;
+  // Raio limitado e consulta enxuta: Overpass é um serviço comunitário e
+  // consultas pesadas (way+center em áreas densas) estouram o timeout.
+  const radius = Math.min(Math.round(input.radius), 2500);
+  const around = `${radius},${input.latitude},${input.longitude}`;
   const body = filters
     .flatMap((filter) => [`node${filter}(around:${around});`, `way${filter}(around:${around});`])
     .join("");
-  const query = `[out:json][timeout:20];(${body});out center ${MAX_RESULTS * 4};`;
+  const query = `[out:json][timeout:10];(${body});out center ${MAX_RESULTS * 2};`;
 
   const elements = await runOverpass(query);
   const origin = { lat: input.latitude, lng: input.longitude };
