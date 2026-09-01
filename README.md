@@ -1,26 +1,47 @@
-# GODHELP
+# 📍 GODHELP
 
-Você cria aplicativo de celular?
+> **Plataforma PWA de geolocalização ultra-rápida, otimizada para conexões móveis e baixo consumo de dados.**
 
-This project was built with [Lovable](https://lovable.dev).
+📱 **Live App:** [https://phone-craft-spark.lovable.app](https://phone-craft-spark.lovable.app)  
+⚡ **Editor Lovable:** [Abrir Projeto no Lovable](https://lovable.dev/projects/8b7dd7c2-dd8b-44bb-8e52-01d642af9bc9)
 
-**Live app**: https://phone-craft-spark.lovable.app
+---
 
-## Build with Lovable
+## 🎯 Sobre o GODHELP
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8b7dd7c2-dd8b-44bb-8e52-01d642af9bc9).
+O **GODHELP** é uma aplicação web progressiva (PWA) projetada para conectar usuários a pontos de interesse (parques, academias, restaurantes) em menos de 30 segundos. Eliminando o ruído de anúncios e o excesso de informações dos buscadores tradicionais, o GODHELP foca em decisão imediata e alta performance.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+---
 
-## Development
+## ⚡ Destaques Técnicos (v1.3)
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+* **Baixo Custo de APIs:** Cache inteligente otimizado para reduzir requisições a serviços de mapas.
+* **Resiliência Mobile:** Desempenho leve e estável em conexões 3G/4G e compatibilidade total com navegadores *in-app* (WebViews do Instagram e TikTok).
+* **Experiência PWA:** Instalação direta na tela inicial do celular, dispensando o fluxo de download em lojas.
+* **Pronto para Escala:** Estrutura preparada para integração com Supabase (Autenticação, Banco de Dados Relacional e Geofencing).
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS
+* **UI Framework:** Shadcn UI, Lucide React
+* **Backend / Database:** Supabase (PostgreSQL + PostGIS)
+* **Desenvolvimento:** [Lovable.dev](https://lovable.dev)
+
+---
+
+## 🚀 Como Rodar o Projeto Localmente
+
+```bash
+# Clone o repositório
+git clone [https://github.com/seu-usuario/phone-craft-spark.git](https://github.com/seu-usuario/phone-craft-spark.git)
+
+# Acesse a pasta do projeto
+cd phone-craft-spark
+
+# Instale as dependências
+npm install
+
+# Execute o servidor de desenvolvimento
 npm run dev
-```
