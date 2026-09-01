@@ -7,11 +7,12 @@ import { haversineMeters, type CategoryId, type Place } from "./places";
 const OVERPASS_ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
 ];
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 const USER_AGENT = "PerlaLocal/1.0 (lovable app)";
-const TIMEOUT_MS = 7000;
+const TIMEOUT_MS = 12000;
 const MAX_RESULTS = 12;
 
 const FILTERS: Record<CategoryId, string[]> = {
