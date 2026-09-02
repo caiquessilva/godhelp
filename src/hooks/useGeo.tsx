@@ -14,10 +14,14 @@ export function useGeo() {
   const [coords, setCoords] = useState<Coords | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [restored, setRestored] = useState(false);
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) {
+      setRestored(true);
+      return;
+    }
     try {
       const parsed = JSON.parse(raw) as Coords;
       if (typeof parsed.latitude === "number" && typeof parsed.longitude === "number") {
@@ -27,6 +31,7 @@ export function useGeo() {
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
+    setRestored(true);
   }, []);
 
   const save = useCallback((next: Coords) => {
@@ -35,6 +40,13 @@ export function useGeo() {
     setError(null);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }, []);
+
+  /** Aplica a estimativa por IP apenas enquanto não houver posição precisa. */
+  const applyApproximate = useCallback((next: Coords) => {
+    setCoords((current) => (current && !current.approximate ? current : { ...next, approximate: true }));
+    setStatus((current) => (current === "loading" ? current : "ready"));
+  }, []);
+
 
   const locate = useCallback(() => {
     if (!("geolocation" in navigator)) {
