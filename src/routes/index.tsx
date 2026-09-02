@@ -270,16 +270,32 @@ function NearbyPage() {
           </div>
         ) : null}
 
+        {coords?.approximate ? (
+          <button
+            type="button"
+            onClick={locate}
+            className="mb-3 flex w-full items-start gap-2 rounded-2xl border border-border bg-muted/60 px-3 py-2 text-left text-xs text-muted-foreground"
+          >
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            Resultados aproximados pela sua região. Toque para usar sua localização exata.
+          </button>
+        ) : null}
+
         {!coords ? (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-              <LocateFixed className="h-6 w-6 text-muted-foreground" aria-hidden />
-            </span>
-            <p className="text-sm text-muted-foreground">
-              Toque no ícone de localização para ver o que está perto.
-            </p>
-          </div>
+          approxQuery.isFetching ? (
+            <PlaceListSkeleton />
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <LocateFixed className="h-6 w-6 text-muted-foreground" aria-hidden />
+              </span>
+              <p className="text-sm text-muted-foreground">
+                Toque no ícone de localização para ver o que está perto.
+              </p>
+            </div>
+          )
         ) : placesQuery.isPending ? (
+
           view === "mapa" ? <MapSkeleton /> : <PlaceListSkeleton />
         ) : placesQuery.isError ? (
           <p className="py-6 text-center text-sm text-destructive">
