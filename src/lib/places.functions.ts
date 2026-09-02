@@ -40,3 +40,9 @@ export const geocode = createServerFn({ method: "POST" })
     const { geocodeAddress } = await import("./places.server");
     return geocodeAddress(data.address);
   });
+
+/** Localização aproximada por IP/borda — usada antes da permissão de GPS. */
+export const fetchApproxLocation = createServerFn({ method: "GET" }).handler(async () => {
+  const { approximateLocation } = await import("./ip-location.server");
+  return approximateLocation();
+});

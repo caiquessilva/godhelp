@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Suspense, lazy, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Info, List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,7 +11,8 @@ import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
-import { fetchNearbyPlaces, geocode } from "@/lib/places.functions";
+import { fetchApproxLocation, fetchNearbyPlaces, geocode } from "@/lib/places.functions";
+
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
 
@@ -89,13 +90,28 @@ function SourceNotice({ places }: { places: Place[] }) {
 }
 
 function NearbyPage() {
-  const { coords, status, error, locate, setCoords } = useGeo();
+  const { coords, status, error, locate, setCoords, restored, applyApproximate } = useGeo();
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
   const nearbyFn = useServerFn(fetchNearbyPlaces);
   const geocodeFn = useServerFn(geocode);
+  const approxFn = useServerFn(fetchApproxLocation);
   const { favoriteIds, toggle } = useFavorites();
+
+  // Estimativa por IP na borda: mostra locais da cidade/bairro antes do GPS fino.
+  const approxQuery = useQuery({
+    queryKey: ["approx-location"],
+    enabled: restored && !coords,
+    staleTime: 30 * 60 * 1000,
+    retry: false,
+    queryFn: () => approxFn({}),
+  });
+
+  useEffect(() => {
+    if (approxQuery.data) applyApproximate(approxQuery.data);
+  }, [approxQuery.data, applyApproximate]);
+
 
   const placesQuery = useQuery({
     queryKey: ["nearby", category, coords?.latitude, coords?.longitude],
@@ -254,16 +270,32 @@ function NearbyPage() {
           </div>
         ) : null}
 
+        {coords?.approximate ? (
+          <button
+            type="button"
+            onClick={locate}
+            className="mb-3 flex w-full items-start gap-2 rounded-2xl border border-border bg-muted/60 px-3 py-2 text-left text-xs text-muted-foreground"
+          >
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+            Resultados aproximados pela sua região. Toque para usar sua localização exata.
+          </button>
+        ) : null}
+
         {!coords ? (
-          <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-              <LocateFixed className="h-6 w-6 text-muted-foreground" aria-hidden />
-            </span>
-            <p className="text-sm text-muted-foreground">
-              Toque no ícone de localização para ver o que está perto.
-            </p>
-          </div>
+          approxQuery.isFetching ? (
+            <PlaceListSkeleton />
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                <LocateFixed className="h-6 w-6 text-muted-foreground" aria-hidden />
+              </span>
+              <p className="text-sm text-muted-foreground">
+                Toque no ícone de localização para ver o que está perto.
+              </p>
+            </div>
+          )
         ) : placesQuery.isPending ? (
+
           view === "mapa" ? <MapSkeleton /> : <PlaceListSkeleton />
         ) : placesQuery.isError ? (
           <p className="py-6 text-center text-sm text-destructive">
