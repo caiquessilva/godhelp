@@ -90,13 +90,28 @@ function SourceNotice({ places }: { places: Place[] }) {
 }
 
 function NearbyPage() {
-  const { coords, status, error, locate, setCoords } = useGeo();
+  const { coords, status, error, locate, setCoords, restored, applyApproximate } = useGeo();
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
   const nearbyFn = useServerFn(fetchNearbyPlaces);
   const geocodeFn = useServerFn(geocode);
+  const approxFn = useServerFn(fetchApproxLocation);
   const { favoriteIds, toggle } = useFavorites();
+
+  // Estimativa por IP na borda: mostra locais da cidade/bairro antes do GPS fino.
+  const approxQuery = useQuery({
+    queryKey: ["approx-location"],
+    enabled: restored && !coords,
+    staleTime: 30 * 60 * 1000,
+    retry: false,
+    queryFn: () => approxFn({}),
+  });
+
+  useEffect(() => {
+    if (approxQuery.data) applyApproximate(approxQuery.data);
+  }, [approxQuery.data, applyApproximate]);
+
 
   const placesQuery = useQuery({
     queryKey: ["nearby", category, coords?.latitude, coords?.longitude],
