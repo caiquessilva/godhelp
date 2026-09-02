@@ -4,9 +4,11 @@ export interface Coords {
   latitude: number;
   longitude: number;
   label?: string;
+  approximate?: boolean;
 }
 
 const STORAGE_KEY = "godhelp-coords";
+
 
 export function useGeo() {
   const [coords, setCoords] = useState<Coords | null>(null);
