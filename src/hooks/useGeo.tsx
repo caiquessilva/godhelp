@@ -76,5 +76,5 @@ export function useGeo() {
     );
   }, [save]);
 
-  return { coords, status, error, locate, setCoords: save };
+  return { coords, status, error, locate, restored, applyApproximate, setCoords: save };
 }
