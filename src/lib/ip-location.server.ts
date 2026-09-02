@@ -7,8 +7,8 @@ export interface ApproxLocation {
   approximate: true;
 }
 
-function num(value: string | null | undefined): number | null {
-  if (!value) return null;
+function num(value: unknown): number | null {
+  if (value == null || value === "") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -33,8 +33,8 @@ function fromCloudflareObject(): ApproxLocation | null {
   try {
     const cf = (getRequest() as unknown as { cf?: Record<string, unknown> }).cf;
     if (!cf) return null;
-    const latitude = num(cf["latitude"] as string | undefined);
-    const longitude = num(cf["longitude"] as string | undefined);
+    const latitude = num(cf["latitude"]);
+    const longitude = num(cf["longitude"]);
     if (latitude == null || longitude == null) return null;
     return {
       latitude,
@@ -77,8 +77,8 @@ async function fromIpApi(): Promise<ApproxLocation | null> {
       if (!response.ok) continue;
       const raw = (await response.json()) as Record<string, unknown>;
       if (raw["error"]) continue;
-      const latitude = num(raw["latitude"] as string | number | undefined as string);
-      const longitude = num(raw["longitude"] as string | number | undefined as string);
+      const latitude = num(raw["latitude"]);
+      const longitude = num(raw["longitude"]);
       if (latitude == null || longitude == null) continue;
       return {
         latitude,
