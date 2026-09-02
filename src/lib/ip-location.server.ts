@@ -54,37 +54,46 @@ function clientIp(): string | null {
   return ip;
 }
 
-/** Fallback aberto por IP quando a borda não fornece coordenadas (ex.: dev local). */
+/** Provedores abertos usados quando a borda não fornece coordenadas (ex.: dev local). */
+function providers(ip: string | null): string[] {
+  return [
+    `https://ipapi.co/${ip ? `${ip}/` : ""}json/`,
+    ip ? `https://ipwho.is/${ip}` : "https://ipwho.is/",
+    ip ? `https://get.geojs.io/v1/ip/geo/${ip}.json` : "https://get.geojs.io/v1/ip/geo.json",
+  ];
+}
+
 async function fromIpApi(): Promise<ApproxLocation | null> {
-  try {
-    const ip = clientIp();
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
-    const response = await fetch(
-      `https://ipapi.co/${ip ? `${ip}/` : ""}json/`,
-      { signal: controller.signal, headers: { Accept: "application/json" } },
-    );
-    clearTimeout(timeout);
-    if (!response.ok) return null;
-    const data = (await response.json()) as {
-      latitude?: number;
-      longitude?: number;
-      city?: string;
-      region?: string;
-    };
-    if (typeof data.latitude !== "number" || typeof data.longitude !== "number") return null;
-    return {
-      latitude: data.latitude,
-      longitude: data.longitude,
-      label: labelFrom(data.city, data.region),
-      approximate: true,
-    };
-  } catch (error) {
-    console.error("IP geolocation fallback falhou", error);
-    return null;
+  const ip = clientIp();
+  for (const url of providers(ip)) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2500);
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: { Accept: "application/json" },
+      });
+      clearTimeout(timeout);
+      if (!response.ok) continue;
+      const raw = (await response.json()) as Record<string, unknown>;
+      if (raw["error"]) continue;
+      const latitude = num(raw["latitude"] as string | number | undefined as string);
+      const longitude = num(raw["longitude"] as string | number | undefined as string);
+      if (latitude == null || longitude == null) continue;
+      return {
+        latitude,
+        longitude,
+        label: labelFrom(raw["city"] as string | undefined, raw["region"] as string | undefined),
+        approximate: true,
+      };
+    } catch (error) {
+      console.error(`IP geolocation falhou (${url})`, error);
+    }
   }
+  return null;
 }
 
 export async function approximateLocation(): Promise<ApproxLocation | null> {
   return fromEdgeHeaders() ?? fromCloudflareObject() ?? (await fromIpApi());
 }
+
