@@ -57,9 +57,9 @@ function clientIp(): string | null {
 /** Provedores abertos usados quando a borda não fornece coordenadas (ex.: dev local). */
 function providers(ip: string | null): string[] {
   return [
-    `https://ipapi.co/${ip ? `${ip}/` : ""}json/`,
     ip ? `https://ipwho.is/${ip}` : "https://ipwho.is/",
     ip ? `https://get.geojs.io/v1/ip/geo/${ip}.json` : "https://get.geojs.io/v1/ip/geo.json",
+    `https://ipapi.co/${ip ? `${ip}/` : ""}json/`,
   ];
 }
 
