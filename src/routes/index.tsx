@@ -39,8 +39,14 @@ const PULL_THRESHOLD = 70;
 
 function MapSkeleton() {
   return (
-    <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-border bg-card">
-      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />
+    <div
+      className="relative h-[60vh] animate-shimmer overflow-hidden rounded-2xl border border-border bg-muted"
+      aria-hidden
+    >
+      <span className="absolute left-[30%] top-[35%] block h-8 w-8 rounded-full bg-card/70" />
+      <span className="absolute left-[60%] top-[20%] block h-8 w-8 rounded-full bg-card/70" />
+      <span className="absolute left-[55%] top-[60%] block h-8 w-8 rounded-full bg-card/70" />
+      <span className="absolute bottom-4 left-4 block h-8 w-32 rounded-full bg-card/70" />
     </div>
   );
 }
@@ -282,7 +288,7 @@ function NearbyPage() {
         ) : null}
 
         {!coords ? (
-          approxQuery.isFetching ? (
+          !restored || status === "loading" || approxQuery.isFetching ? (
             <PlaceListSkeleton />
           ) : (
             <div className="flex flex-col items-center gap-3 py-10 text-center">

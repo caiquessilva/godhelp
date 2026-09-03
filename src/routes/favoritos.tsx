@@ -28,7 +28,9 @@ function FavoritesPage() {
 
   return (
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
-      {loading ? null : !user ? (
+      {loading ? (
+        <FavoritesSkeleton />
+      ) : !user ? (
         <div className="flex flex-col items-center gap-3 py-12 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Heart className="h-7 w-7 text-muted-foreground" aria-hidden />
