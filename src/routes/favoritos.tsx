@@ -22,6 +22,32 @@ export const Route = createFileRoute("/favoritos")({
   component: FavoritesPage,
 });
 
+function FavoritesSkeleton() {
+  return (
+    <ul className="space-y-3" aria-hidden>
+      {[0, 1, 2].map((item) => (
+        <li
+          key={item}
+          className="animate-shimmer rounded-2xl border border-border bg-card p-4"
+          style={{ animationDelay: `${item * 0.12}s` }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <span className="flex-1 space-y-2 py-1">
+              <span className="block h-4 w-2/3 rounded-full bg-muted" />
+              <span className="block h-3 w-1/3 rounded-full bg-muted" />
+              <span className="block h-3 w-1/2 rounded-full bg-muted" />
+            </span>
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="block h-10 w-10 rounded-full bg-muted" />
+              <span className="block h-10 w-10 rounded-full bg-muted" />
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function FavoritesPage() {
   const { user, loading } = useAuth();
   const { favorites, isLoading } = useFavorites();
@@ -46,7 +72,7 @@ function FavoritesPage() {
           </Link>
         </div>
       ) : isLoading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">Carregando…</p>
+        <FavoritesSkeleton />
       ) : favorites.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-12 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
