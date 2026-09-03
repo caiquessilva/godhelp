@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -15,6 +15,8 @@ import {
   X,
 } from "lucide-react";
 
+import { ClientOnly } from "@tanstack/react-router";
+
 import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/PlaceCard";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -24,13 +26,18 @@ import {
   categoryLabel,
   directionsUrl,
   googleMapsSearchUrl,
-  mapEmbedUrl,
   placePhotoUrl,
   titleCase,
   wazeUrl,
   type Place,
 } from "@/lib/places";
 import { fetchPlaceDetails } from "@/lib/places.functions";
+
+const PlaceMiniMap = lazy(() => import("@/components/PlaceMiniMap"));
+
+function MiniMapSkeleton() {
+  return <div className="aspect-[16/10] w-full animate-shimmer rounded-2xl bg-muted" aria-hidden />;
+}
 
 export const Route = createFileRoute("/local/$placeId")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -113,7 +120,7 @@ function PlaceDetailPage() {
 
   const place = detailsQuery.data;
   const isFavorite = place ? favoriteIds.has(place.id) : false;
-  const embedUrl = place ? mapEmbedUrl(place) : null;
+  const hasCoords = place?.latitude != null && place?.longitude != null;
 
   async function sharePlace() {
     if (!place) return;
@@ -183,14 +190,13 @@ function PlaceDetailPage() {
           ) : null}
 
 
-          {embedUrl ? (
+          {hasCoords ? (
             <div className="space-y-2">
-              <iframe
-                title={`Mapa de ${place.name}`}
-                src={embedUrl}
-                loading="lazy"
-                className="aspect-[16/10] w-full rounded-2xl border border-border"
-              />
+              <ClientOnly fallback={<MiniMapSkeleton />}>
+                <Suspense fallback={<MiniMapSkeleton />}>
+                  <PlaceMiniMap latitude={place.latitude!} longitude={place.longitude!} />
+                </Suspense>
+              </ClientOnly>
               <div className="grid grid-cols-2 gap-2">
                 <a
                   href={googleMapsSearchUrl(place) ?? directionsUrl(place)}
