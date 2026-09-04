@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Heart, MapPin, Navigation, Star } from "lucide-react";
 
 import { haptic } from "@/lib/haptics";
-import { directionsUrl, formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
+import { googleRouteUrl, useEnv } from "@/lib/inapp";
+import { formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
 
 export function StatusBadge({ openNow }: { openNow: boolean }) {
   return (
@@ -32,6 +33,7 @@ export function PlaceCard({
   onToggleFavorite: () => void;
 }) {
   const photo = placePhotoUrl(place.photoName);
+  const env = useEnv();
 
   return (
     <li className="rounded-2xl border border-border bg-card p-3 shadow-sm">
@@ -100,8 +102,8 @@ export function PlaceCard({
             />
           </button>
           <a
-            href={directionsUrl(place)}
-            target="_blank"
+            href={googleRouteUrl(place, env)}
+            target={env.inApp ? "_self" : "_blank"}
             rel="noreferrer"
             onClick={() => haptic(10)}
             aria-label={`Rota até ${titleCase(place.name)}`}
