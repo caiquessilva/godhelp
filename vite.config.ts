@@ -32,14 +32,24 @@ export default defineConfig({
           runtimeCaching: [
             {
               // Navegações: sempre tenta a rede primeiro, cai para o cache offline.
+              // Totalmente offline sem página em cache → mostra a aba Favoritos salva.
               urlPattern: ({ request }) => request.mode === "navigate",
               handler: "NetworkFirst",
               options: {
                 cacheName: "godhelp-pages",
                 networkTimeoutSeconds: 4,
                 expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 7 },
+                plugins: [
+                  {
+                    handlerDidError: async () =>
+                      (await caches.match("/favoritos", { ignoreSearch: true })) ??
+                      (await caches.match("/", { ignoreSearch: true })) ??
+                      Response.redirect("/favoritos", 302),
+                  },
+                ],
               },
             },
+
             {
               // Assets estáticos com hash gerados pelo build.
               urlPattern: ({ url, request }) =>

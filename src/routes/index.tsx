@@ -32,7 +32,12 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Parques, academias e restaurantes próximos, por geolocalização.",
       },
+      { property: "og:image", content: "https://godhelp.app/og-cover.jpg" },
+      { name: "twitter:image", content: "https://godhelp.app/og-cover.jpg" },
+      { property: "og:url", content: "https://godhelp.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://godhelp.app/" }],
+
   }),
   component: NearbyPage,
 });
