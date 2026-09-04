@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 
 import { AppShell } from "@/components/AppShell";
 
@@ -22,7 +23,18 @@ export const Route = createFileRoute("/privacidade")({
 
 function PrivacyPage() {
   return (
-    <AppShell title="Privacidade (LGPD)" leading="back">
+    <AppShell
+      title="Privacidade (LGPD)"
+      leading={
+        <Link
+          to="/ajustes"
+          aria-label="Voltar"
+          className="shrink-0 rounded-full border border-border p-2.5 text-muted-foreground"
+        >
+          <ArrowLeft className="h-5 w-5" aria-hidden />
+        </Link>
+      }
+    >
       <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
         <p>
           Esta política descreve como o GODHELP trata dados pessoais, em conformidade com a Lei
