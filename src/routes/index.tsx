@@ -12,6 +12,7 @@ import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
 import { fetchApproxLocation, fetchNearbyPlaces, geocode, suggestAddresses } from "@/lib/places.functions";
+import { useSearchRadius } from "@/lib/search-radius";
 
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));

@@ -1,8 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ChevronDown, Download, MessageCircleWarning } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme, type ThemeChoice } from "@/hooks/useTheme";
+import { useInstallPrompt } from "@/lib/install";
+import { RADIUS_OPTIONS, saveSearchRadius, useSearchRadius } from "@/lib/search-radius";
 
 export const Route = createFileRoute("/ajustes")({
   head: () => ({
@@ -10,7 +15,8 @@ export const Route = createFileRoute("/ajustes")({
       { title: "Ajustes — GODHELP" },
       {
         name: "description",
-        content: "Escolha modo claro ou escuro e gerencie sua conta no GODHELP.",
+        content:
+          "Tema, GPS, raio de busca, instalação do app e privacidade (LGPD) no GODHELP.",
       },
       { property: "og:title", content: "Ajustes — GODHELP" },
       { property: "og:description", content: "Tema, conta e preferências do GODHELP." },
@@ -19,23 +25,207 @@ export const Route = createFileRoute("/ajustes")({
   component: SettingsPage,
 });
 
-const options: { value: ThemeChoice; label: string }[] = [
+const themeOptions: { value: ThemeChoice; label: string }[] = [
   { value: "light", label: "Claro" },
   { value: "dark", label: "Escuro" },
   { value: "system", label: "Sistema" },
 ];
 
+type GpsState = "desconhecido" | "concedido" | "pendente" | "negado";
+
+function useGpsPermission(): { state: GpsState; refresh: () => void } {
+  const [state, setState] = useState<GpsState>("desconhecido");
+
+  const apply = (value: PermissionState) => {
+    setState(
+      value === "granted" ? "concedido" : value === "denied" ? "negado" : "pendente",
+    );
+  };
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("permissions" in navigator)) return;
+    let status: PermissionStatus | null = null;
+    let cancelled = false;
+    navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((result) => {
+        if (cancelled) return;
+        status = result;
+        apply(result.state);
+        result.onchange = () => apply(result.state);
+      })
+      .catch(() => setState("desconhecido"));
+    return () => {
+      cancelled = true;
+      if (status) status.onchange = null;
+    };
+  }, []);
+
+  const refresh = () => {
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      () => setState("concedido"),
+      (error) => setState(error.code === error.PERMISSION_DENIED ? "negado" : "pendente"),
+      { timeout: 8000 },
+    );
+  };
+
+  return { state, refresh };
+}
+
+const gpsStyles: Record<GpsState, { dot: string; label: string; pill: string }> = {
+  concedido: {
+    dot: "bg-emerald-500",
+    label: "Permitido",
+    pill: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  },
+  pendente: {
+    dot: "bg-amber-500",
+    label: "Não solicitado",
+    pill: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  },
+  negado: {
+    dot: "bg-red-500",
+    label: "Negado",
+    pill: "bg-red-500/10 text-red-700 dark:text-red-400",
+  },
+  desconhecido: {
+    dot: "bg-muted-foreground",
+    label: "Indisponível",
+    pill: "bg-muted text-muted-foreground",
+  },
+};
+
+function GpsSection() {
+  const { state, refresh } = useGpsPermission();
+  const [showHelp, setShowHelp] = useState(false);
+  const style = gpsStyles[state];
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+        Localização (GPS)
+      </h2>
+      <div className="mt-2 rounded-2xl border border-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Permissão de localização</span>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${style.pill}`}
+          >
+            <span className={`h-2 w-2 rounded-full ${style.dot}`} aria-hidden />
+            {style.label}
+          </span>
+        </div>
+
+        {state === "negado" && (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => setShowHelp((open) => !open)}
+              className="flex w-full items-center justify-between rounded-full border border-border px-4 py-3 text-sm font-semibold"
+              aria-expanded={showHelp}
+            >
+              Como reativar o GPS no seu navegador/celular
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${showHelp ? "rotate-180" : ""}`}
+                aria-hidden
+              />
+            </button>
+            {showHelp && (
+              <div className="mt-3 space-y-3 rounded-2xl bg-muted p-4 text-xs leading-relaxed text-muted-foreground">
+                <div>
+                  <p className="font-bold text-foreground">Android (Chrome)</p>
+                  <p>
+                    Toque no cadeado ao lado do endereço do site → Permissões → Localização →
+                    Permitir. Depois recarregue a página.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">iPhone (Safari)</p>
+                  <p>
+                    Ajustes → Privacidade e Segurança → Serviços de Localização → Sites do Safari →
+                    selecione "Ao usar o app". Depois recarregue a página.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Computador</p>
+                  <p>
+                    Clique no ícone de cadeado/ajustes na barra de endereço → Configurações do site
+                    → Localização → Permitir.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={refresh}
+                  className="w-full rounded-full bg-primary py-2.5 text-xs font-bold text-primary-foreground"
+                >
+                  Já reativei — verificar novamente
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function InstallSection() {
+  const { canInstall, isInstalled, promptInstall } = useInstallPrompt();
+
+  if (isInstalled) {
+    return (
+      <section className="mt-8">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">App</h2>
+        <div className="mt-2 rounded-2xl border border-border bg-card p-4">
+          <p className="text-sm text-muted-foreground">
+            GODHELP já está instalado na sua tela inicial.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">App</h2>
+      <div className="mt-2 rounded-2xl border border-border bg-card p-4">
+        {canInstall ? (
+          <button
+            type="button"
+            onClick={async () => {
+              const accepted = await promptInstall();
+              if (accepted) toast.success("GODHELP instalado na tela inicial!");
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground"
+          >
+            <Download className="h-4 w-4" aria-hidden />
+            Instalar GODHELP na Tela Inicial
+          </button>
+        ) : (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Para instalar: no Android (Chrome), toque no menu ⋮ → "Instalar app" ou "Adicionar à
+            tela inicial". No iPhone (Safari), toque em Compartilhar → "Adicionar à Tela de
+            Início".
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const radius = useSearchRadius();
 
   return (
     <AppShell title="Ajustes">
       <section>
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Tema</h2>
         <div className="mt-2 flex gap-2">
-          {options.map((option) => (
+          {themeOptions.map((option) => (
             <button
               key={option.value}
               type="button"
@@ -51,6 +241,36 @@ function SettingsPage() {
           ))}
         </div>
       </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          Raio de busca padrão
+        </h2>
+        <div className="mt-2 flex gap-2">
+          {RADIUS_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => saveSearchRadius(option.value)}
+              aria-pressed={radius === option.value}
+              className={`flex-1 rounded-full px-3 py-3 text-sm font-semibold ${
+                radius === option.value
+                  ? "bg-foreground text-background"
+                  : "border border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Raios menores deixam a busca mais rápida e mostram só o que está realmente perto.
+        </p>
+      </section>
+
+      <GpsSection />
+
+      <InstallSection />
 
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Conta</h2>
@@ -76,6 +296,36 @@ function SettingsPage() {
             Entrar ou criar conta
           </Link>
         )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Sobre</h2>
+        <div className="mt-2 rounded-2xl border border-border bg-card p-4">
+          <p className="text-sm font-semibold">GODHELP — Versão 1.3.0</p>
+          <div className="mt-3 flex gap-2">
+            <Link
+              to="/termos"
+              className="flex-1 rounded-full border border-border py-2.5 text-center text-xs font-bold"
+            >
+              Termos de Uso
+            </Link>
+            <Link
+              to="/privacidade"
+              className="flex-1 rounded-full border border-border py-2.5 text-center text-xs font-bold"
+            >
+              Privacidade (LGPD)
+            </Link>
+          </div>
+          <a
+            href="https://wa.me/?text=Ol%C3%A1!%20Quero%20reportar%20um%20problema%20ou%20enviar%20um%20feedback%20sobre%20o%20GODHELP%3A%20"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 flex items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-bold"
+          >
+            <MessageCircleWarning className="h-4 w-4" aria-hidden />
+            Reportar um problema / Feedback
+          </a>
+        </div>
       </section>
     </AppShell>
   );
