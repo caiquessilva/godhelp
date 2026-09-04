@@ -98,6 +98,7 @@ function SourceNotice({ places }: { places: Place[] }) {
 
 function NearbyPage() {
   const { coords, status, error, locate, setCoords, restored, applyApproximate } = useGeo();
+  const weather = useWeather(coords);
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
