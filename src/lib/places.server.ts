@@ -118,14 +118,27 @@ export async function searchNearby(input: {
     return rankFor(sharedHit, input.latitude, input.longitude);
   }
 
+  // BFF: busca espacial por raio no índice de POIs. Cobre usuários em células
+  // vizinhas de geohash, evitando nova chamada paga quando já há dados recentes.
+  const geoHits = await geosearchPois({ ...input, limit: MAX_RESULTS });
+  if (isEnoughCoverage(geoHits)) {
+    cacheSet(memoryKey, geoHits);
+    await writeCache(cacheKey, geoHits);
+    return rankFor(geoHits, input.latitude, input.longitude);
+  }
+
   try {
     const places = await searchNearbyGoogle(input, center, types);
     cacheSet(memoryKey, places);
     await writeCache(cacheKey, places);
+    await indexPois(input.category, places);
     return rankFor(places, input.latitude, input.longitude);
   } catch (error) {
     console.error("Google Places indisponível, aplicando fallback", error);
   }
+
+  // índice espacial parcial ainda é melhor do que cair para OSM/tela vazia
+  if (geoHits.length) return rankFor(geoHits, input.latitude, input.longitude);
 
   // 1) cache expirado da mesma região (melhor do que tela vazia)
   const staleHit = await readCache(cacheKey, { allowStale: true });
