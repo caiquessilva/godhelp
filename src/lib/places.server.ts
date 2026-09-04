@@ -2,6 +2,7 @@ import { CATEGORIES, haversineMeters, type CategoryId, type Place } from "./plac
 import { geohashCenter, geohashEncode } from "./geohash";
 import { readCache, writeCache } from "./places-cache.server";
 import { geocodeAddressOSM, placeDetailsOSM, searchNearbyOSM } from "./overpass.server";
+import { geosearchPois, indexPois, isEnoughCoverage } from "./poi-store.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 const FIELD_MASK =
