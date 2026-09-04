@@ -129,7 +129,7 @@ function NearbyPage() {
   }, [address, suggestFn]);
 
   const pickSuggestion = (item: { label: string; latitude: number; longitude: number }) => {
-    setCoords({ latitude: item.latitude, longitude: item.longitude, label: item.label.split(",")[0] });
+    setCoords({ latitude: item.latitude, longitude: item.longitude, label: item.label.split(",")[0] ?? item.label });
     setAddress("");
     setSuggestions([]);
     setSuggestOpen(false);
