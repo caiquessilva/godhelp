@@ -150,8 +150,10 @@ function NearbyPage() {
   }, [approxQuery.data, applyApproximate]);
 
 
+  const radius = useSearchRadius();
+
   const placesQuery = useQuery({
-    queryKey: ["nearby", category, coords?.latitude, coords?.longitude],
+    queryKey: ["nearby", category, coords?.latitude, coords?.longitude, radius],
     enabled: Boolean(coords),
     staleTime: 5 * 60 * 1000,
     queryFn: () =>
@@ -160,7 +162,7 @@ function NearbyPage() {
           latitude: coords!.latitude,
           longitude: coords!.longitude,
           category,
-          radius: 3000,
+          radius,
         },
       }),
   });
