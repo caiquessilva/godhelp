@@ -63,8 +63,7 @@ export function PlaceCard({
   const env = useEnv();
 
   return (
-    <li className="relative rounded-2xl border border-border bg-card p-3 shadow-sm">
-      <WeatherBadge weather={weather ?? null} isPark={category === "parques"} />
+    <li className="rounded-2xl border border-border bg-card p-3 shadow-sm">
       <div className="flex items-start gap-3">
         <Link
           to="/local/$placeId"
