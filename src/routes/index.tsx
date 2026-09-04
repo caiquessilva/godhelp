@@ -11,7 +11,7 @@ import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
-import { fetchApproxLocation, fetchNearbyPlaces, geocode } from "@/lib/places.functions";
+import { fetchApproxLocation, fetchNearbyPlaces, geocode, suggestAddresses } from "@/lib/places.functions";
 
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
@@ -100,10 +100,40 @@ function NearbyPage() {
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
+  const [suggestions, setSuggestions] = useState<
+    { id: string; label: string; latitude: number; longitude: number }[]
+  >([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const nearbyFn = useServerFn(fetchNearbyPlaces);
   const geocodeFn = useServerFn(geocode);
   const approxFn = useServerFn(fetchApproxLocation);
+  const suggestFn = useServerFn(suggestAddresses);
   const { favoriteIds, toggle } = useFavorites();
+
+  // Autocomplete com debounce: sugere ruas/bairros enquanto o usuário digita.
+  useEffect(() => {
+    const query = address.trim();
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      suggestFn({ data: { query } })
+        .then((result) => {
+          setSuggestions(result);
+          setSuggestOpen(result.length > 0);
+        })
+        .catch(() => setSuggestions([]));
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [address, suggestFn]);
+
+  const pickSuggestion = (item: { label: string; latitude: number; longitude: number }) => {
+    setCoords({ latitude: item.latitude, longitude: item.longitude, label: item.label.split(",")[0] ?? item.label });
+    setAddress("");
+    setSuggestions([]);
+    setSuggestOpen(false);
+  };
 
   // Estimativa por IP na borda: mostra locais da cidade/bairro antes do GPS fino.
   const approxQuery = useQuery({
@@ -178,43 +208,73 @@ function NearbyPage() {
 
   return (
     <AppShell title="Perto de mim" subtitle={coords?.label ?? "Onde você está agora"}>
-      <form
-        className="flex items-center gap-2 rounded-2xl border border-input bg-card px-3 py-1.5 focus-within:border-primary"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (address.trim().length >= 3) addressMutation.mutate(address.trim());
-        }}
-      >
-        <button
-          type="button"
-          onClick={locate}
-          aria-label="Usar minha localização"
-          className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
+      <div className="relative">
+        <form
+          className="flex items-center gap-2 rounded-2xl border border-input bg-card px-3 py-1.5 focus-within:border-primary"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSuggestOpen(false);
+            if (address.trim().length >= 3) addressMutation.mutate(address.trim());
+          }}
         >
-          {status === "loading" ? (
-            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-          ) : (
-            <LocateFixed className="h-5 w-5" aria-hidden />
-          )}
-        </button>
-        <input
-          value={address}
-          onChange={(event) => setAddress(event.target.value)}
-          placeholder="Buscar endereço ou usar sua localização"
-          className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none"
-        />
-        <button
-          type="submit"
-          aria-label="Buscar endereço"
-          className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
-        >
-          {addressMutation.isPending ? (
-            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-          ) : (
-            <Search className="h-5 w-5" aria-hidden />
-          )}
-        </button>
-      </form>
+          <button
+            type="button"
+            onClick={locate}
+            aria-label="Usar minha localização"
+            className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
+          >
+            {status === "loading" ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+            ) : (
+              <LocateFixed className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+          <input
+            value={address}
+            onChange={(event) => setAddress(event.target.value)}
+            onBlur={() => window.setTimeout(() => setSuggestOpen(false), 150)}
+            placeholder="Buscar rua, bairro ou usar sua localização"
+            role="combobox"
+            aria-expanded={suggestOpen}
+            aria-autocomplete="list"
+            aria-controls="address-suggestions"
+            className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none"
+          />
+          <button
+            type="submit"
+            aria-label="Buscar endereço"
+            className="shrink-0 rounded-full p-2 text-muted-foreground transition-colors hover:bg-accent"
+          >
+            {addressMutation.isPending ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+            ) : (
+              <Search className="h-5 w-5" aria-hidden />
+            )}
+          </button>
+        </form>
+        {suggestOpen && suggestions.length > 0 ? (
+          <ul
+            id="address-suggestions"
+            role="listbox"
+            className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+          >
+            {suggestions.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => pickSuggestion(item)}
+                  className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
+                >
+                  <Search className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <span className="line-clamp-2">{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
 

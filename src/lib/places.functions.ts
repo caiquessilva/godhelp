@@ -19,6 +19,14 @@ const detailsSchema = z.object({
 });
 
 const geocodeSchema = z.object({ address: z.string().trim().min(3).max(200) });
+const suggestSchema = z.object({ query: z.string().trim().min(3).max(200) });
+
+export const suggestAddresses = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => suggestSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { suggestAddresses: suggest } = await import("./places.server");
+    return suggest(data.query);
+  });
 
 export const fetchNearbyPlaces = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => nearbySchema.parse(data))
