@@ -11,7 +11,7 @@ import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
-import { fetchApproxLocation, fetchNearbyPlaces, geocode } from "@/lib/places.functions";
+import { fetchApproxLocation, fetchNearbyPlaces, geocode, suggestAddresses } from "@/lib/places.functions";
 
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
@@ -100,10 +100,40 @@ function NearbyPage() {
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
+  const [suggestions, setSuggestions] = useState<
+    { id: string; label: string; latitude: number; longitude: number }[]
+  >([]);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const nearbyFn = useServerFn(fetchNearbyPlaces);
   const geocodeFn = useServerFn(geocode);
   const approxFn = useServerFn(fetchApproxLocation);
+  const suggestFn = useServerFn(suggestAddresses);
   const { favoriteIds, toggle } = useFavorites();
+
+  // Autocomplete com debounce: sugere ruas/bairros enquanto o usuário digita.
+  useEffect(() => {
+    const query = address.trim();
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      suggestFn({ data: { query } })
+        .then((result) => {
+          setSuggestions(result);
+          setSuggestOpen(result.length > 0);
+        })
+        .catch(() => setSuggestions([]));
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [address, suggestFn]);
+
+  const pickSuggestion = (item: { label: string; latitude: number; longitude: number }) => {
+    setCoords({ latitude: item.latitude, longitude: item.longitude, label: item.label.split(",")[0] });
+    setAddress("");
+    setSuggestions([]);
+    setSuggestOpen(false);
+  };
 
   // Estimativa por IP na borda: mostra locais da cidade/bairro antes do GPS fino.
   const approxQuery = useQuery({
