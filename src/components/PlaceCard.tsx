@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Heart, MapPin, Navigation, Star } from "lucide-react";
 
 import { haptic } from "@/lib/haptics";
-import { directionsUrl, formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
+import { googleRouteUrl, useEnv } from "@/lib/inapp";
+import { formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
 
 export function StatusBadge({ openNow }: { openNow: boolean }) {
   return (
