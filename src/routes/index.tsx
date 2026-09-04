@@ -10,6 +10,7 @@ import { AppShell } from "@/components/AppShell";
 import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useWeather } from "@/hooks/useWeather";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
 import { fetchApproxLocation, fetchNearbyPlaces, geocode, suggestAddresses } from "@/lib/places.functions";
 import { useSearchRadius } from "@/lib/search-radius";
@@ -396,6 +397,7 @@ function NearbyPage() {
                   category={category}
                   isFavorite={favoriteIds.has(place.id)}
                   onToggleFavorite={() => toggle.mutate({ place, category })}
+                  weather={weather}
                 />
               ))}
             </ul>
