@@ -52,6 +52,7 @@ function FavoritesSkeleton() {
 function FavoritesPage() {
   const { user, loading } = useAuth();
   const { favorites, isLoading } = useFavorites();
+  const env = useEnv();
 
   return (
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
