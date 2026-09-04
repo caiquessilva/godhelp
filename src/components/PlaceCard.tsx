@@ -33,6 +33,7 @@ export function PlaceCard({
   onToggleFavorite: () => void;
 }) {
   const photo = placePhotoUrl(place.photoName);
+  const env = useEnv();
 
   return (
     <li className="rounded-2xl border border-border bg-card p-3 shadow-sm">
@@ -101,8 +102,8 @@ export function PlaceCard({
             />
           </button>
           <a
-            href={directionsUrl(place)}
-            target="_blank"
+            href={googleRouteUrl(place, env)}
+            target={env.inApp ? "_self" : "_blank"}
             rel="noreferrer"
             onClick={() => haptic(10)}
             aria-label={`Rota até ${titleCase(place.name)}`}

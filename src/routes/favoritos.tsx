@@ -4,7 +4,8 @@ import { Heart, Navigation } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites } from "@/hooks/useFavorites";
-import { categoryLabel, directionsUrl, titleCase } from "@/lib/places";
+import { googleRouteUrl, useEnv } from "@/lib/inapp";
+import { categoryLabel, titleCase } from "@/lib/places";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/favoritos")({
@@ -114,8 +115,8 @@ function FavoritesPage() {
                     <Heart className="h-5 w-5 fill-primary" aria-hidden />
                   </button>
                   <a
-                    href={directionsUrl(row)}
-                    target="_blank"
+                    href={googleRouteUrl(row, env)}
+                    target={env.inApp ? "_self" : "_blank"}
                     rel="noreferrer"
                     aria-label={`Rota até ${row.name}`}
                     className="rounded-full bg-primary p-2.5 text-primary-foreground"
