@@ -1,4 +1,4 @@
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -54,16 +54,15 @@ function subscribeLocal(listener: () => void) {
 }
 
 function useLocalFavorites(): FavoriteRow[] {
-  const hydrated = useRef(false);
-  if (typeof window !== "undefined" && !hydrated.current) {
-    hydrated.current = true;
+  const [rows, setRows] = useState<FavoriteRow[]>(localCache);
+
+  useEffect(() => {
     localCache = readLocal();
-  }
-  return useSyncExternalStore(
-    subscribeLocal,
-    () => localCache,
-    () => [],
-  );
+    setRows(localCache);
+    return subscribeLocal(() => setRows(localCache));
+  }, []);
+
+  return rows;
 }
 
 function toRow(place: Place, category: string): FavoriteRow {
