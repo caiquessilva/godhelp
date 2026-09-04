@@ -283,6 +283,44 @@ async function placeDetailsGoogle(placeId: string): Promise<Place> {
   }
 }
 
+export interface AddressSuggestion {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
+/** Autocomplete de endereços via Nominatim (gratuito, sem chave). */
+export async function suggestAddresses(query: string): Promise<AddressSuggestion[]> {
+  const key = `suggest:${query.toLowerCase()}`;
+  const cached = cacheGet<AddressSuggestion[]>(key);
+  if (cached) return cached;
+  const url =
+    `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6` +
+    `&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, {
+    headers: { "User-Agent": "godhelp-app/1.0 (autocomplete)" },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) return [];
+  const raw = (await response.json()) as {
+    place_id?: number;
+    display_name?: string;
+    lat?: string;
+    lon?: string;
+  }[];
+  const suggestions = raw
+    .filter((item) => item.lat && item.lon && item.display_name)
+    .map((item) => ({
+      id: String(item.place_id ?? item.display_name),
+      label: item.display_name!,
+      latitude: Number(item.lat),
+      longitude: Number(item.lon),
+    }));
+  cacheSet(key, suggestions);
+  return suggestions;
+}
+
 export async function geocodeAddress(address: string) {
   try {
     return await geocodeAddressGoogle(address);
