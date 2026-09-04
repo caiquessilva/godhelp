@@ -21,22 +21,50 @@ export function StatusBadge({ openNow }: { openNow: boolean }) {
   );
 }
 
+export function WeatherBadge({
+  weather,
+  isPark,
+}: {
+  weather: { temperature: number; isRaining: boolean; icon: string } | null;
+  isPark: boolean;
+}) {
+  if (!weather) return null;
+  const alert = isPark && weather.isRaining;
+  return (
+    <span
+      role="status"
+      className={`absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ${
+        alert
+          ? "bg-amber-500/95 text-white"
+          : "border border-border bg-card/90 text-muted-foreground backdrop-blur-sm"
+      }`}
+    >
+      <span aria-hidden>{weather.icon}</span>
+      {weather.temperature}°C
+      {alert ? " • Possibilidade de chuva" : null}
+    </span>
+  );
+}
+
 export function PlaceCard({
   place,
   category,
   isFavorite,
   onToggleFavorite,
+  weather,
 }: {
   place: Place;
   category: string;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  weather?: { temperature: number; isRaining: boolean; icon: string } | null;
 }) {
   const photo = placePhotoUrl(place.photoName);
   const env = useEnv();
 
   return (
-    <li className="rounded-2xl border border-border bg-card p-3 shadow-sm">
+    <li className="relative rounded-2xl border border-border bg-card p-3 shadow-sm">
+      <WeatherBadge weather={weather ?? null} isPark={category === "parques"} />
       <div className="flex items-start gap-3">
         <Link
           to="/local/$placeId"
