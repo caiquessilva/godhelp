@@ -33,15 +33,15 @@ export function WeatherBadge({
   return (
     <span
       role="status"
-      className={`absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
         alert
           ? "bg-amber-500/95 text-white"
-          : "border border-border bg-card/90 text-muted-foreground backdrop-blur-sm"
+          : "border border-border bg-card/90 text-muted-foreground"
       }`}
     >
       <span aria-hidden>{weather.icon}</span>
       {weather.temperature}°C
-      {alert ? " • Possibilidade de chuva" : null}
+      {alert ? " • Chuva" : null}
     </span>
   );
 }
@@ -63,8 +63,7 @@ export function PlaceCard({
   const env = useEnv();
 
   return (
-    <li className="relative rounded-2xl border border-border bg-card p-3 shadow-sm">
-      <WeatherBadge weather={weather ?? null} isPark={category === "parques"} />
+    <li className="rounded-2xl border border-border bg-card p-3 shadow-sm">
       <div className="flex items-start gap-3">
         <Link
           to="/local/$placeId"
@@ -93,6 +92,9 @@ export function PlaceCard({
               {titleCase(place.name)}
             </span>
             <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              {weather ? (
+                <WeatherBadge weather={weather} isPark={category === "parques"} />
+              ) : null}
               {place.distanceMeters != null ? (
                 <span className="font-semibold text-foreground">
                   {formatDistance(place.distanceMeters)}
