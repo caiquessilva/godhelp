@@ -155,6 +155,7 @@ export async function searchNearby(input: {
   const osmPlaces = await searchNearbyOSM(input);
   if (osmPlaces.length) {
     cacheSet(memoryKey, osmPlaces);
+    await indexPois(input.category, osmPlaces);
     return osmPlaces;
   }
 
