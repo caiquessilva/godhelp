@@ -45,7 +45,20 @@ export function setupServiceWorker(): void {
     return;
   }
 
-  void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch((error) => {
-    console.error("service worker registration failed", error);
-  });
+  void navigator.serviceWorker
+    .register(SW_URL, { scope: "/" })
+    .then(async () => {
+      // Guarda a aba Favoritos no cache para abrir mesmo sem internet.
+      try {
+        const cache = await caches.open("godhelp-pages");
+        const response = await fetch("/favoritos", { credentials: "same-origin" });
+        if (response.ok) await cache.put("/favoritos", response.clone());
+      } catch {
+        /* sem rede agora; será cacheada na próxima visita */
+      }
+    })
+    .catch((error) => {
+      console.error("service worker registration failed", error);
+    });
+
 }
