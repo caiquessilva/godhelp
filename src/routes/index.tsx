@@ -12,6 +12,7 @@ import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
 import { CATEGORIES, type CategoryId, type Place } from "@/lib/places";
 import { fetchApproxLocation, fetchNearbyPlaces, geocode, suggestAddresses } from "@/lib/places.functions";
+import { useSearchRadius } from "@/lib/search-radius";
 
 
 const PlacesMap = lazy(() => import("@/components/PlacesMap"));
@@ -149,8 +150,10 @@ function NearbyPage() {
   }, [approxQuery.data, applyApproximate]);
 
 
+  const radius = useSearchRadius();
+
   const placesQuery = useQuery({
-    queryKey: ["nearby", category, coords?.latitude, coords?.longitude],
+    queryKey: ["nearby", category, coords?.latitude, coords?.longitude, radius],
     enabled: Boolean(coords),
     staleTime: 5 * 60 * 1000,
     queryFn: () =>
@@ -159,7 +162,7 @@ function NearbyPage() {
           latitude: coords!.latitude,
           longitude: coords!.longitude,
           category,
-          radius: 3000,
+          radius,
         },
       }),
   });
