@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ApiPlacePhotoRouteImport } from './routes/api/place-photo'
 import { Route as LocalPlaceIdRouteImport } from './routes/local.$placeId'
 
@@ -36,6 +38,16 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPlacePhotoRoute = ApiPlacePhotoRouteImport.update({
   id: '/api/place-photo',
   path: '/api/place-photo',
@@ -52,6 +64,8 @@ export interface FileRoutesByFullPath {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
@@ -60,6 +74,8 @@ export interface FileRoutesByTo {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
@@ -69,6 +85,8 @@ export interface FileRoutesById {
   '/ajustes': typeof AjustesRoute
   '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
+  '/privacidade': typeof PrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
 }
@@ -79,6 +97,8 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/entrar'
     | '/favoritos'
+    | '/privacidade'
+    | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +107,8 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/entrar'
     | '/favoritos'
+    | '/privacidade'
+    | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
   id:
@@ -95,6 +117,8 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/entrar'
     | '/favoritos'
+    | '/privacidade'
+    | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
   fileRoutesById: FileRoutesById
@@ -104,6 +128,8 @@ export interface RootRouteChildren {
   AjustesRoute: typeof AjustesRoute
   EntrarRoute: typeof EntrarRoute
   FavoritosRoute: typeof FavoritosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  TermosRoute: typeof TermosRoute
   ApiPlacePhotoRoute: typeof ApiPlacePhotoRoute
   LocalPlaceIdRoute: typeof LocalPlaceIdRoute
 }
@@ -138,6 +164,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/place-photo': {
       id: '/api/place-photo'
       path: '/api/place-photo'
@@ -160,6 +200,8 @@ const rootRouteChildren: RootRouteChildren = {
   AjustesRoute: AjustesRoute,
   EntrarRoute: EntrarRoute,
   FavoritosRoute: FavoritosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  TermosRoute: TermosRoute,
   ApiPlacePhotoRoute: ApiPlacePhotoRoute,
   LocalPlaceIdRoute: LocalPlaceIdRoute,
 }
