@@ -80,6 +80,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pois: {
+        Row: {
+          category: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          payload: Json
+          refreshed_at: string
+        }
+        Insert: {
+          category: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          payload: Json
+          refreshed_at?: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          payload?: Json
+          refreshed_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -106,7 +136,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      pois_geosearch: {
+        Args: {
+          _category: string
+          _lat: number
+          _limit?: number
+          _lng: number
+          _max_age_minutes?: number
+          _radius: number
+        }
+        Returns: {
+          distance_meters: number
+          payload: Json
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
