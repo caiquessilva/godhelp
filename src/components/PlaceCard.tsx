@@ -33,15 +33,15 @@ export function WeatherBadge({
   return (
     <span
       role="status"
-      className={`absolute right-2 top-2 z-10 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
         alert
           ? "bg-amber-500/95 text-white"
-          : "border border-border bg-card/90 text-muted-foreground backdrop-blur-sm"
+          : "border border-border bg-card/90 text-muted-foreground"
       }`}
     >
       <span aria-hidden>{weather.icon}</span>
       {weather.temperature}°C
-      {alert ? " • Possibilidade de chuva" : null}
+      {alert ? " • Chuva" : null}
     </span>
   );
 }
