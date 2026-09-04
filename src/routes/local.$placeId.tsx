@@ -21,14 +21,13 @@ import { AppShell } from "@/components/AppShell";
 import { StatusBadge } from "@/components/PlaceCard";
 import { useFavorites } from "@/hooks/useFavorites";
 import { haptic } from "@/lib/haptics";
+import { appleRouteUrl, googleRouteUrl, useEnv, wazeRouteUrl, type Env } from "@/lib/inapp";
 import {
-  appleMapsUrl,
   categoryLabel,
   directionsUrl,
   googleMapsSearchUrl,
   placePhotoUrl,
   titleCase,
-  wazeUrl,
   type Place,
 } from "@/lib/places";
 import { fetchPlaceDetails } from "@/lib/places.functions";
@@ -57,11 +56,19 @@ export const Route = createFileRoute("/local/$placeId")({
   component: PlaceDetailPage,
 });
 
-function RouteSheet({ place, onClose }: { place: Place; onClose: () => void }) {
+function RouteSheet({
+  place,
+  env,
+  onClose,
+}: {
+  place: Place;
+  env: Env;
+  onClose: () => void;
+}) {
   const options = [
-    { label: "Google Maps", url: directionsUrl(place) },
-    { label: "Apple Maps", url: appleMapsUrl(place) },
-    { label: "Waze", url: wazeUrl(place) },
+    { label: "Google Maps", url: googleRouteUrl(place, env) },
+    { label: "Apple Maps", url: appleRouteUrl(place, env) },
+    { label: "Waze", url: wazeRouteUrl(place, env) },
   ];
   return (
     <div
@@ -91,7 +98,7 @@ function RouteSheet({ place, onClose }: { place: Place; onClose: () => void }) {
             <li key={option.label}>
               <a
                 href={option.url}
-                target="_blank"
+                target={env.inApp ? "_self" : "_blank"}
                 rel="noreferrer"
                 className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 text-sm font-semibold"
               >
@@ -112,6 +119,7 @@ function PlaceDetailPage() {
   const detailsFn = useServerFn(fetchPlaceDetails);
   const [routeSheetOpen, setRouteSheetOpen] = useState(false);
   const { favoriteIds, toggle } = useFavorites();
+  const env = useEnv();
 
   const detailsQuery = useQuery({
     queryKey: ["place", placeId],
@@ -199,8 +207,12 @@ function PlaceDetailPage() {
               </ClientOnly>
               <div className="grid grid-cols-2 gap-2">
                 <a
-                  href={googleMapsSearchUrl(place) ?? directionsUrl(place)}
-                  target="_blank"
+                  href={
+                    env.inApp
+                      ? googleRouteUrl(place, env)
+                      : (googleMapsSearchUrl(place) ?? directionsUrl(place))
+                  }
+                  target={env.inApp ? "_self" : "_blank"}
                   rel="noreferrer"
                   onClick={() => haptic(10)}
                   className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm font-semibold"
@@ -209,8 +221,8 @@ function PlaceDetailPage() {
                   Abrir no Google Maps
                 </a>
                 <a
-                  href={wazeUrl(place)}
-                  target="_blank"
+                  href={wazeRouteUrl(place, env)}
+                  target={env.inApp ? "_self" : "_blank"}
                   rel="noreferrer"
                   onClick={() => haptic(10)}
                   className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm font-semibold"
@@ -319,7 +331,7 @@ function PlaceDetailPage() {
           ) : null}
 
           {routeSheetOpen ? (
-            <RouteSheet place={place} onClose={() => setRouteSheetOpen(false)} />
+            <RouteSheet place={place} env={env} onClose={() => setRouteSheetOpen(false)} />
           ) : null}
         </div>
       )}
