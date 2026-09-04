@@ -72,7 +72,7 @@ async function fetchWeather(latitude: number, longitude: number): Promise<Weathe
 
 /**
  * Busca o clima atual em segundo plano (nunca bloqueia a lista).
- * Cache de 30 min por célula aproximada de coordenadas (~1 km).
+ * Cache de 15 min (sessionStorage) por célula de ~1 km.
  */
 export function useWeather(coords: { latitude: number; longitude: number } | null) {
   // Arredonda para 2 casas (~1 km) para reaproveitar a mesma resposta entre locais próximos.
