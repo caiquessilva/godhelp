@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, MapPin, Navigation, Star } from "lucide-react";
+import { Heart, Navigation, Star } from "lucide-react";
 
 import { haptic } from "@/lib/haptics";
 import { googleRouteUrl, useEnv } from "@/lib/inapp";
-import { formatDistance, placePhotoUrl, titleCase, type Place } from "@/lib/places";
+import { formatDistance, titleCase, type Place } from "@/lib/places";
 
 export function StatusBadge({ openNow }: { openNow: boolean }) {
   return (
@@ -59,7 +59,6 @@ export function PlaceCard({
   onToggleFavorite: () => void;
   weather?: { temperature: number; isRaining: boolean; icon: string } | null;
 }) {
-  const photo = placePhotoUrl(place.photoName);
   const env = useEnv();
 
   return (
@@ -69,24 +68,8 @@ export function PlaceCard({
           to="/local/$placeId"
           params={{ placeId: place.id }}
           search={{ category }}
-          className="flex min-w-0 flex-1 items-start gap-3"
+          className="flex min-w-0 flex-1 items-start"
         >
-          {photo ? (
-            <img
-              src={photo}
-              srcSet={`${placePhotoUrl(place.photoName, 96)} 96w, ${placePhotoUrl(place.photoName, 160)} 160w`}
-              sizes="64px"
-              alt={`Foto de ${titleCase(place.name)}`}
-              loading="lazy"
-              decoding="async"
-              className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
-            />
-
-          ) : (
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
-              <MapPin className="h-6 w-6 text-muted-foreground" aria-hidden />
-            </span>
-          )}
           <span className="min-w-0 flex-1">
             <span className="block truncate text-base font-semibold text-card-foreground">
               {titleCase(place.name)}
