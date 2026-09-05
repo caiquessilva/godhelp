@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { MapPin, Heart, Settings } from "lucide-react";
+import { MapPin, Heart, HandHeart, Settings } from "lucide-react";
 
 const items = [
-  { to: "/", label: "Perto de mim", Icon: MapPin },
+  { to: "/", label: "Perto", Icon: MapPin },
   { to: "/favoritos", label: "Favoritos", Icon: Heart },
+  { to: "/doar", label: "Doar", Icon: HandHeart },
   { to: "/ajustes", label: "Ajustes", Icon: Settings },
 ] as const;
 
