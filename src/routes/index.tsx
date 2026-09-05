@@ -389,13 +389,13 @@ function NearbyPage() {
           </ClientOnly>
         ) : placesQuery.data.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Nada encontrado num raio de 3 km.
+            Nada encontrado num raio de {radius / 1000} km.
           </p>
         ) : (
           <>
             <SourceNotice places={placesQuery.data} />
             <ul className="space-y-3">
-              {placesQuery.data.map((place) => (
+              {placesQuery.data.slice(0, visibleCount).map((place) => (
                 <PlaceCard
                   key={place.id}
                   place={place}
@@ -406,6 +406,15 @@ function NearbyPage() {
                 />
               ))}
             </ul>
+            {placesQuery.data.length > visibleCount ? (
+              <button
+                type="button"
+                onClick={() => setVisibleCount((value) => value + PAGE_SIZE)}
+                className="mt-3 w-full rounded-full border border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground"
+              >
+                Mostrar mais locais
+              </button>
+            ) : null}
           </>
         )}
       </div>
