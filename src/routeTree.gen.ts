@@ -18,6 +18,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ApiPlacePhotoRouteImport } from './routes/api/place-photo'
 import { Route as LocalPlaceIdRouteImport } from './routes/local.$placeId'
+import { Route as ApiPublicAlertasClimaRouteImport } from './routes/api/public/alertas-clima'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const LocalPlaceIdRoute = LocalPlaceIdRouteImport.update({
   path: '/local/$placeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAlertasClimaRoute = ApiPublicAlertasClimaRouteImport.update({
+  id: '/api/public/alertas-clima',
+  path: '/api/public/alertas-clima',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
+  '/api/public/alertas-clima': typeof ApiPublicAlertasClimaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
+  '/api/public/alertas-clima': typeof ApiPublicAlertasClimaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/api/place-photo': typeof ApiPlacePhotoRoute
   '/local/$placeId': typeof LocalPlaceIdRoute
+  '/api/public/alertas-clima': typeof ApiPublicAlertasClimaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
+    | '/api/public/alertas-clima'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
+    | '/api/public/alertas-clima'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/api/place-photo'
     | '/local/$placeId'
+    | '/api/public/alertas-clima'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   ApiPlacePhotoRoute: typeof ApiPlacePhotoRoute
   LocalPlaceIdRoute: typeof LocalPlaceIdRoute
+  ApiPublicAlertasClimaRoute: typeof ApiPublicAlertasClimaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocalPlaceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/alertas-clima': {
+      id: '/api/public/alertas-clima'
+      path: '/api/public/alertas-clima'
+      fullPath: '/api/public/alertas-clima'
+      preLoaderRoute: typeof ApiPublicAlertasClimaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   ApiPlacePhotoRoute: ApiPlacePhotoRoute,
   LocalPlaceIdRoute: LocalPlaceIdRoute,
+  ApiPublicAlertasClimaRoute: ApiPublicAlertasClimaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

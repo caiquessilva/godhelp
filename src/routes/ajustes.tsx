@@ -1,13 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, Download, MessageCircleWarning } from "lucide-react";
+import { Bell, ChevronDown, Download, MessageCircleWarning } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
+import { useGeo } from "@/hooks/useGeo";
 import { useTheme, type ThemeChoice } from "@/hooks/useTheme";
 import { useInstallPrompt } from "@/lib/install";
+import { enablePush, pushPermission } from "@/lib/push";
+import { registerPushDevice } from "@/lib/push.functions";
 import { RADIUS_OPTIONS, saveSearchRadius, useSearchRadius } from "@/lib/search-radius";
+
 
 export const Route = createFileRoute("/ajustes")({
   head: () => ({
@@ -214,6 +218,82 @@ function InstallSection() {
   );
 }
 
+function AlertsSection() {
+  const { coords } = useGeo();
+  const { user } = useAuth();
+  const [granted, setGranted] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setGranted(pushPermission() === "granted");
+  }, []);
+
+  const activate = async () => {
+    setBusy(true);
+    try {
+      const result = await enablePush();
+      if (result.status === "registered") {
+        await registerPushDevice({
+          data: {
+            token: result.token,
+            ...(coords
+              ? { latitude: coords.latitude, longitude: coords.longitude }
+              : {}),
+            ...(user ? { userId: user.id } : {}),
+          },
+        });
+        setGranted(true);
+        toast.success("Alertas ativados! Avisaremos sobre chuva perto de você.");
+        return;
+      }
+      const messages: Record<string, string> = {
+        "not-configured": "Os alertas ainda não estão configurados neste app.",
+        unsupported: "Seu navegador não suporta notificações.",
+        "open-in-new-tab":
+          "Abra o GODHELP em uma aba própria (ou pelo app instalado) para ativar os alertas.",
+        denied:
+          "As notificações estão bloqueadas. Libere nas configurações do site do seu navegador.",
+      };
+      toast.error(messages[result.status] ?? "Não foi possível ativar agora.");
+    } catch {
+      toast.error("Não foi possível ativar os alertas agora.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mt-8">
+      <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+        Alertas
+      </h2>
+      <div className="mt-2 rounded-2xl border border-border bg-card p-4">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Avisos curtos e úteis, como “chuva prevista para daqui a 20 minutos perto do parque que
+          você viu”. Você pode desativar quando quiser nas configurações do navegador.
+        </p>
+        {granted ? (
+          <p className="mt-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            Alertas ativados neste aparelho
+          </p>
+        ) : (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={activate}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+          >
+            <Bell className="h-4 w-4" aria-hidden />
+            {busy ? "Ativando..." : "Ativar alertas de chuva e novidades"}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
+
 function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
@@ -271,6 +351,9 @@ function SettingsPage() {
       <GpsSection />
 
       <InstallSection />
+
+      <AlertsSection />
+
 
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Conta</h2>

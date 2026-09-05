@@ -131,6 +131,63 @@ export type Database = {
         }
         Relationships: []
       }
+      push_alerts_sent: {
+        Row: {
+          alert_key: string
+          id: string
+          sent_at: string
+          token: string
+        }
+        Insert: {
+          alert_key: string
+          id?: string
+          sent_at?: string
+          token: string
+        }
+        Update: {
+          alert_key?: string
+          id?: string
+          sent_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      push_devices: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          place_id: string | null
+          place_name: string | null
+          token: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place_id?: string | null
+          place_name?: string | null
+          token: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          place_id?: string | null
+          place_name?: string | null
+          token?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
