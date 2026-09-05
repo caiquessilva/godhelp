@@ -352,6 +352,9 @@ function SettingsPage() {
 
       <InstallSection />
 
+      <AlertsSection />
+
+
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Conta</h2>
         {user ? (
