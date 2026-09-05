@@ -25,7 +25,7 @@ export const Route = createFileRoute("/doar")({
   component: DonatePage,
 });
 
-const PIX_KEY = "contato@godhelp.app";
+const PIX_KEY = "contatogodhelp@gmail.com";
 
 const amounts = [
   { value: "5", label: "R$ 5", hint: "Um cafezinho" },
