@@ -1,21 +1,15 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
-const appId = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID as
-  | string
-  | undefined;
-const vapidKey = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY as
-  | string
-  | undefined;
+const env = import.meta.env as Record<string, string | undefined>;
+
+const appId = env["VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID"];
+const vapidKey = env["VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY"];
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY as
-    | string
-    | undefined,
-  projectId: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID as
-    | string
-    | undefined,
-  appId,
+  apiKey: env["VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY"] ?? "",
+  projectId: env["VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID"] ?? "",
+  appId: appId ?? "",
   messagingSenderId: appId?.split(":")[1] ?? "",
 };
 
@@ -28,7 +22,7 @@ export async function enablePush(): Promise<PushResult> {
   if (
     !firebaseConfig.apiKey ||
     !firebaseConfig.projectId ||
-    !appId ||
+    !firebaseConfig.appId ||
     !vapidKey ||
     !firebaseConfig.messagingSenderId
   ) {
@@ -45,7 +39,7 @@ export async function enablePush(): Promise<PushResult> {
     Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
   if (permission !== "granted") return { status: "denied" };
 
-  const query = new URLSearchParams(firebaseConfig as Record<string, string>).toString();
+  const query = new URLSearchParams(firebaseConfig).toString();
   const serviceWorkerRegistration = await navigator.serviceWorker.register(
     `/firebase-messaging-sw.js?${query}`,
   );
@@ -57,7 +51,7 @@ export async function enablePush(): Promise<PushResult> {
   onMessage(messaging, (payload) => {
     const title = payload.notification?.title;
     if (title && "Notification" in window) {
-      new Notification(title, { body: payload.notification?.body });
+      new Notification(title, { body: payload.notification?.body ?? "" });
     }
   });
 
