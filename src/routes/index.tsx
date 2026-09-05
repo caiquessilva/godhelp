@@ -43,6 +43,7 @@ export const Route = createFileRoute("/")({
 });
 
 const PULL_THRESHOLD = 70;
+const PAGE_SIZE = 6;
 
 function MapSkeleton() {
   return (
