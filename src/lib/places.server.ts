@@ -82,7 +82,15 @@ function mapPlace(raw: RawPlace, origin?: { lat: number; lng: number }): Place |
   };
 }
 
-/** Recalcula distância/ordem a partir da posição real do usuário. */
+/** Nota ponderada: locais com poucas avaliações não ultrapassam os consolidados. */
+function ratingScore(place: Place): number {
+  if (place.rating == null) return -1;
+  const count = place.ratingCount ?? 0;
+  const confidence = count / (count + 20);
+  return place.rating * confidence;
+}
+
+/** Recalcula distância e ordena do melhor avaliado para o pior. */
 function rankFor(places: Place[], lat: number, lng: number): Place[] {
   return places
     .map((place) => ({
@@ -92,7 +100,11 @@ function rankFor(places: Place[], lat: number, lng: number): Place[] {
           ? Math.round(haversineMeters(lat, lng, place.latitude, place.longitude))
           : null,
     }))
-    .sort((a, b) => (a.distanceMeters ?? 1e9) - (b.distanceMeters ?? 1e9));
+    .sort((a, b) => {
+      const diff = ratingScore(b) - ratingScore(a);
+      if (Math.abs(diff) > 0.001) return diff;
+      return (a.distanceMeters ?? 1e9) - (b.distanceMeters ?? 1e9);
+    });
 }
 
 export async function searchNearby(input: {
