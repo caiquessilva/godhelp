@@ -159,6 +159,12 @@ function NearbyPage() {
 
 
   const radius = useSearchRadius();
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Ao trocar categoria, raio ou posição, volta a mostrar poucos itens por vez.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [category, radius, coords?.latitude, coords?.longitude]);
 
   const placesQuery = useQuery({
     queryKey: ["nearby", category, coords?.latitude, coords?.longitude, radius],
