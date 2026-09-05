@@ -38,7 +38,7 @@ function DonatePage() {
   const [copied, setCopied] = useState(false);
 
   const copyKey = async () => {
-    haptic("light");
+    haptic(10);
     try {
       await navigator.clipboard.writeText(PIX_KEY);
       setCopied(true);
@@ -68,7 +68,7 @@ function DonatePage() {
             key={item.value}
             type="button"
             onClick={() => {
-              haptic("light");
+              haptic(10);
               setSelected(item.value);
             }}
             aria-pressed={selected === item.value}
