@@ -89,7 +89,7 @@ export async function enablePush(): Promise<PushResult> {
 
     const app = getApps()[0] ?? initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
-    const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration });
+    const token = await getToken(messaging, { vapidKey: vapidKey!, serviceWorkerRegistration });
     if (!token) return { status: "denied" };
 
     onMessage(messaging, (payload) => {
@@ -103,7 +103,9 @@ export async function enablePush(): Promise<PushResult> {
   } catch (error) {
     const { inApp } = detectEnv(navigator.userAgent);
     if (inApp) return { status: "in-app-browser" };
-    return { status: "error", detail: error instanceof Error ? error.message : undefined };
+    return error instanceof Error
+      ? { status: "error", detail: error.message }
+      : { status: "error" };
   }
 }
 
