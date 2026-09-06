@@ -184,6 +184,8 @@ function FavoritesPage() {
 
   return (
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
+      <EmergencyDial />
+
       {loading || isLoading ? (
         <FavoritesSkeleton />
       ) : favorites.length === 0 ? (
