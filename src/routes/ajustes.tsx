@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useGeo } from "@/hooks/useGeo";
 import { useTheme, type ThemeChoice } from "@/hooks/useTheme";
 import { useInstallPrompt } from "@/lib/install";
-import { enablePush, pushPermission } from "@/lib/push";
+import { enablePush, pushBlocker, pushPermission } from "@/lib/push";
 import { registerPushDevice } from "@/lib/push.functions";
 import { RADIUS_OPTIONS, saveSearchRadius, useSearchRadius } from "@/lib/search-radius";
 
