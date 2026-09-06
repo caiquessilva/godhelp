@@ -223,13 +223,45 @@ function AlertsSection() {
   const { user } = useAuth();
   const [granted, setGranted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [help, setHelp] = useState<string | null>(null);
+  const [blocker, setBlocker] = useState<string | null>(null);
 
   useEffect(() => {
     setGranted(pushPermission() === "granted");
+    setBlocker(pushBlocker());
   }, []);
+
+  const helpFor = (status: string): string => {
+    switch (status) {
+      case "in-app-browser":
+        return "Você está no navegador interno do Instagram/TikTok, que bloqueia notificações. Toque nos três pontinhos e escolha “Abrir no navegador” (Chrome ou Safari) para ativar.";
+      case "ios-install-required":
+        return "No iPhone, as notificações só funcionam com o GODHELP instalado: toque em Compartilhar, depois “Adicionar à Tela de Início”, abra o app pelo ícone e ative os alertas por lá.";
+      case "open-in-new-tab":
+        return "Abra o GODHELP em uma aba própria (ou pelo app instalado) para ativar os alertas.";
+      case "denied":
+        return "As notificações estão bloqueadas para este site. Libere nas configurações do navegador (Notificações) e tente de novo.";
+      case "not-configured":
+        return "Os alertas ainda não estão configurados neste app.";
+      case "unsupported":
+        return "Seu navegador não suporta notificações. Tente pelo Chrome (Android) ou instale o app no iPhone.";
+      default:
+        return "Não foi possível ativar agora. Tente novamente em instantes.";
+    }
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.origin);
+      toast.success("Link copiado! Cole no Chrome ou Safari.");
+    } catch {
+      toast.error("Não foi possível copiar o link.");
+    }
+  };
 
   const activate = async () => {
     setBusy(true);
+    setHelp(null);
     try {
       const result = await enablePush();
       if (result.status === "registered") {
@@ -243,24 +275,24 @@ function AlertsSection() {
           },
         });
         setGranted(true);
+        setBlocker(null);
         toast.success("Alertas ativados! Avisaremos sobre chuva perto de você.");
         return;
       }
-      const messages: Record<string, string> = {
-        "not-configured": "Os alertas ainda não estão configurados neste app.",
-        unsupported: "Seu navegador não suporta notificações.",
-        "open-in-new-tab":
-          "Abra o GODHELP em uma aba própria (ou pelo app instalado) para ativar os alertas.",
-        denied:
-          "As notificações estão bloqueadas. Libere nas configurações do site do seu navegador.",
-      };
-      toast.error(messages[result.status] ?? "Não foi possível ativar agora.");
+      setBlocker(result.status);
+      const message = helpFor(result.status);
+      setHelp(message);
+      toast.error(message);
     } catch {
-      toast.error("Não foi possível ativar os alertas agora.");
+      const message = helpFor("error");
+      setHelp(message);
+      toast.error(message);
     } finally {
       setBusy(false);
     }
   };
+
+  const needsOtherBrowser = blocker === "in-app-browser" || blocker === "open-in-new-tab";
 
   return (
     <section className="mt-8">
@@ -277,20 +309,37 @@ function AlertsSection() {
             Alertas ativados neste aparelho
           </p>
         ) : (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={activate}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
-          >
-            <Bell className="h-4 w-4" aria-hidden />
-            {busy ? "Ativando..." : "Ativar alertas de chuva e novidades"}
-          </button>
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={activate}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground disabled:opacity-60"
+            >
+              <Bell className="h-4 w-4" aria-hidden />
+              {busy ? "Ativando..." : "Ativar alertas de chuva e novidades"}
+            </button>
+            {(help ?? (blocker ? helpFor(blocker) : null)) && (
+              <p className="mt-3 rounded-xl bg-muted p-3 text-xs leading-relaxed text-muted-foreground">
+                {help ?? helpFor(blocker as string)}
+              </p>
+            )}
+            {needsOtherBrowser && (
+              <button
+                type="button"
+                onClick={copyLink}
+                className="mt-2 w-full rounded-full border border-border py-3 text-sm font-semibold"
+              >
+                Copiar link para abrir no navegador
+              </button>
+            )}
+          </>
         )}
       </div>
     </section>
   );
 }
+
 
 
 
