@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, Navigation, Share2 } from "lucide-react";
+import { Heart, Navigation, Phone, Share2, Shield, Siren, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
