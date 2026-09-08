@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
 import type { Place } from "@/lib/places";
 
 export interface FavoriteRow {
@@ -18,9 +16,7 @@ export interface FavoriteRow {
 
 const STORAGE_KEY = "godhelp-favorites";
 
-/* ------------------------------------------------------------------ */
-/* Favoritos locais (navegação anônima, rápido e offline)              */
-/* ------------------------------------------------------------------ */
+/* Favoritos ficam sempre no próprio aparelho — o app não tem conta. */
 
 let localCache: FavoriteRow[] = [];
 const listeners = new Set<() => void>();
@@ -77,85 +73,20 @@ function toRow(place: Place, category: string): FavoriteRow {
   };
 }
 
-/* ------------------------------------------------------------------ */
-
 export function useFavorites() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const local = useLocalFavorites();
-
-  const query = useQuery({
-    queryKey: ["favorites", user?.id ?? "anon"],
-    enabled: Boolean(user),
-    queryFn: async (): Promise<FavoriteRow[]> => {
-      const { data, error } = await supabase
-        .from("favorites")
-        .select("id, place_id, name, address, category, latitude, longitude")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  // Ao entrar na conta, sobe os favoritos salvos localmente para o banco.
-  const syncing = useRef(false);
-  useEffect(() => {
-    if (!user || syncing.current || local.length === 0) return;
-    syncing.current = true;
-    void (async () => {
-      const { error } = await supabase.from("favorites").upsert(
-        local.map((row) => ({
-          user_id: user.id,
-          place_id: row.place_id,
-          name: row.name,
-          address: row.address,
-          category: row.category,
-          latitude: row.latitude,
-          longitude: row.longitude,
-        })),
-        { onConflict: "user_id,place_id", ignoreDuplicates: true },
-      );
-      if (!error) {
-        writeLocal([]);
-        void queryClient.invalidateQueries({ queryKey: ["favorites"] });
-      }
-      syncing.current = false;
-    })();
-  }, [user, local, queryClient]);
-
-  const favorites = user ? (query.data ?? []) : local;
+  const favorites = useLocalFavorites();
 
   const toggle = useMutation({
     mutationFn: async ({ place, category }: { place: Place; category: string }) => {
-      if (!user) {
-        const exists = localCache.some((row) => row.place_id === place.id);
-        writeLocal(
-          exists
-            ? localCache.filter((row) => row.place_id !== place.id)
-            : [toRow(place, category), ...localCache],
-        );
-        return exists ? ("removed" as const) : ("added" as const);
-      }
-      const existing = query.data?.find((row) => row.place_id === place.id);
-      if (existing) {
-        const { error } = await supabase.from("favorites").delete().eq("id", existing.id);
-        if (error) throw error;
-        return "removed" as const;
-      }
-      const { error } = await supabase.from("favorites").insert({
-        user_id: user.id,
-        place_id: place.id,
-        name: place.name,
-        address: place.address,
-        category,
-        latitude: place.latitude,
-        longitude: place.longitude,
-      });
-      if (error) throw error;
-      return "added" as const;
+      const exists = localCache.some((row) => row.place_id === place.id);
+      writeLocal(
+        exists
+          ? localCache.filter((row) => row.place_id !== place.id)
+          : [toRow(place, category), ...localCache],
+      );
+      return exists ? ("removed" as const) : ("added" as const);
     },
     onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ["favorites"] });
       toast.success(result === "added" ? "Salvo nos favoritos" : "Removido dos favoritos");
     },
     onError: () => {
@@ -165,15 +96,9 @@ export function useFavorites() {
 
   const remove = useMutation({
     mutationFn: async (row: FavoriteRow) => {
-      if (!user || row.id.startsWith("local:")) {
-        writeLocal(localCache.filter((item) => item.place_id !== row.place_id));
-        return;
-      }
-      const { error } = await supabase.from("favorites").delete().eq("id", row.id);
-      if (error) throw error;
+      writeLocal(localCache.filter((item) => item.place_id !== row.place_id));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["favorites"] });
       toast.success("Removido dos favoritos");
     },
     onError: () => {
@@ -185,7 +110,7 @@ export function useFavorites() {
 
   return {
     favorites,
-    isLoading: Boolean(user) && query.isLoading,
+    isLoading: false,
     favoriteIds,
     toggle,
     remove,
