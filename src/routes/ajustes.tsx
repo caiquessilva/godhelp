@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronDown, Download, MessageCircleWarning } from "lucide-react";
+import { Bell, ChevronDown, Download, Instagram, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -409,8 +409,7 @@ function SettingsPage() {
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Sobre</h2>
         <div className="mt-2 rounded-2xl border border-border bg-card p-4">
-          <p className="text-sm font-semibold">GODHELP — Versão 1.3.0</p>
-          <div className="mt-3 flex gap-2">
+          <div className="flex gap-2">
             <Link
               to="/termos"
               className="flex-1 rounded-full border border-border py-2.5 text-center text-xs font-bold"
@@ -424,14 +423,23 @@ function SettingsPage() {
               Privacidade (LGPD)
             </Link>
           </div>
+
           <a
-            href="https://wa.me/?text=Ol%C3%A1!%20Quero%20reportar%20um%20problema%20ou%20enviar%20um%20feedback%20sobre%20o%20GODHELP%3A%20"
+            href="mailto:contatogodhelp@gmail.com?subject=Feedback%20GODHELP"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-sm font-bold text-primary-foreground"
+          >
+            <Mail className="h-4 w-4" aria-hidden />
+            Enviar feedback por e-mail
+          </a>
+
+          <a
+            href="https://www.instagram.com/gdhelp_"
             target="_blank"
             rel="noreferrer"
-            className="mt-2 flex items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-bold"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-border py-3 text-sm font-semibold text-muted-foreground"
           >
-            <MessageCircleWarning className="h-4 w-4" aria-hidden />
-            Reportar um problema / Feedback
+            <Instagram className="h-4 w-4" aria-hidden />
+            Siga @gdhelp_ no Instagram
           </a>
         </div>
       </section>
