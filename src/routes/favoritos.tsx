@@ -3,7 +3,7 @@ import { Heart, Navigation, Phone, Share2, Shield, Siren, Stethoscope } from "lu
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { useAuth } from "@/hooks/useAuth";
+
 import { useFavorites, type FavoriteRow } from "@/hooks/useFavorites";
 import { haptic } from "@/lib/haptics";
 import { googleRouteUrl, useEnv } from "@/lib/inapp";
@@ -178,7 +178,6 @@ function EmptyState() {
 }
 
 function FavoritesPage() {
-  const { user, loading } = useAuth();
   const { favorites, isLoading, remove } = useFavorites();
   const env = useEnv();
 
@@ -186,23 +185,14 @@ function FavoritesPage() {
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
       <EmergencyDial />
 
-      {loading || isLoading ? (
+      {isLoading ? (
         <FavoritesSkeleton />
       ) : favorites.length === 0 ? (
         <EmptyState />
       ) : (
         <>
-          {!user ? (
-            <p className="mb-3 rounded-2xl bg-muted px-4 py-3 text-xs text-muted-foreground">
-              Salvos neste aparelho.{" "}
-              <Link to="/entrar" className="font-semibold text-primary underline">
-                Entre na sua conta
-              </Link>{" "}
-              para sincronizar em todos os dispositivos.
-            </p>
-          ) : null}
-
           <ul className="space-y-3">
+
             {favorites.map((row) => (
               <li key={row.id} className="rounded-2xl border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
