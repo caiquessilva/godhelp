@@ -271,7 +271,7 @@ function AlertsSection() {
             ...(coords
               ? { latitude: coords.latitude, longitude: coords.longitude }
               : {}),
-            ...(user ? { userId: user.id } : {}),
+            
           },
         });
         setGranted(true);
