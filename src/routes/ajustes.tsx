@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Bell, ChevronDown, Download, MessageCircleWarning } from "lucide-react";
+import { Bell, ChevronDown, Download, Instagram, Mail, MessageCircleWarning } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
