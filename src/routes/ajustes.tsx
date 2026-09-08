@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bell, ChevronDown, Download, MessageCircleWarning } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { useAuth } from "@/hooks/useAuth";
+
 import { useGeo } from "@/hooks/useGeo";
 import { useTheme, type ThemeChoice } from "@/hooks/useTheme";
 import { useInstallPrompt } from "@/lib/install";
@@ -220,7 +220,7 @@ function InstallSection() {
 
 function AlertsSection() {
   const { coords } = useGeo();
-  const { user } = useAuth();
+  
   const [granted, setGranted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [help, setHelp] = useState<string | null>(null);
@@ -271,7 +271,7 @@ function AlertsSection() {
             ...(coords
               ? { latitude: coords.latitude, longitude: coords.longitude }
               : {}),
-            ...(user ? { userId: user.id } : {}),
+            
           },
         });
         setGranted(true);
@@ -345,9 +345,8 @@ function AlertsSection() {
 
 function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
   const radius = useSearchRadius();
+
 
   return (
     <AppShell title="Ajustes">
@@ -404,31 +403,8 @@ function SettingsPage() {
       <AlertsSection />
 
 
-      <section className="mt-8">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Conta</h2>
-        {user ? (
-          <div className="mt-2 rounded-2xl border border-border bg-card p-4">
-            <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-            <button
-              type="button"
-              onClick={async () => {
-                await signOut();
-                await navigate({ to: "/" });
-              }}
-              className="mt-3 w-full rounded-full border border-border py-3 text-sm font-bold"
-            >
-              Sair
-            </button>
-          </div>
-        ) : (
-          <Link
-            to="/entrar"
-            className="mt-2 flex justify-center rounded-full bg-primary py-4 text-sm font-bold text-primary-foreground"
-          >
-            Entrar ou criar conta
-          </Link>
-        )}
-      </section>
+
+
 
       <section className="mt-8">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Sobre</h2>

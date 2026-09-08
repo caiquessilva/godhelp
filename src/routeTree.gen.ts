@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as DoarRouteImport } from './routes/doar'
-import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
@@ -33,11 +32,6 @@ const AjustesRoute = AjustesRouteImport.update({
 const DoarRoute = DoarRouteImport.update({
   id: '/doar',
   path: '/doar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EntrarRoute = EntrarRouteImport.update({
-  id: '/entrar',
-  path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritosRoute = FavoritosRouteImport.update({
@@ -75,7 +69,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
-  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -87,7 +80,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
-  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -100,7 +92,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
-  '/entrar': typeof EntrarRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -114,7 +105,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/doar'
-    | '/entrar'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -126,7 +116,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/doar'
-    | '/entrar'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -138,7 +127,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/doar'
-    | '/entrar'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -151,7 +139,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjustesRoute: typeof AjustesRoute
   DoarRoute: typeof DoarRoute
-  EntrarRoute: typeof EntrarRoute
   FavoritosRoute: typeof FavoritosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
@@ -181,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/doar'
       fullPath: '/doar'
       preLoaderRoute: typeof DoarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entrar': {
-      id: '/entrar'
-      path: '/entrar'
-      fullPath: '/entrar'
-      preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favoritos': {
@@ -239,7 +219,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjustesRoute: AjustesRoute,
   DoarRoute: DoarRoute,
-  EntrarRoute: EntrarRoute,
   FavoritosRoute: FavoritosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
