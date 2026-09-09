@@ -168,8 +168,6 @@ function FavoritesPage() {
 
   return (
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
-      <EmergencyDial />
-
       {isLoading ? (
         <FavoritesSkeleton />
       ) : favorites.length === 0 ? (
@@ -177,7 +175,6 @@ function FavoritesPage() {
       ) : (
         <>
           <ul className="space-y-3">
-
             {favorites.map((row) => (
               <li key={row.id} className="rounded-2xl border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -227,6 +224,8 @@ function FavoritesPage() {
               </li>
             ))}
           </ul>
+
+          <EmergencyDial />
         </>
       )}
     </AppShell>
