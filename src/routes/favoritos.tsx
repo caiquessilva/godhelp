@@ -102,19 +102,12 @@ const EMERGENCY_CONTACTS = [
 
 function EmergencyDial() {
   return (
-    <section className="mb-4 rounded-2xl border border-destructive/30 bg-slate-900 p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-            <Phone className="h-4 w-4" aria-hidden />
-          </span>
-          <h2 className="text-sm font-bold text-white">
-            Discagem Rápida de Emergência
-          </h2>
-        </div>
-        <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
-          Nacional · Gratuito
-        </span>
+    <section className="mt-8 rounded-2xl border border-border bg-card p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <Phone className="h-4 w-4 text-muted-foreground" aria-hidden />
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Emergência nacional · gratuito
+        </h2>
       </div>
 
       <ul className="grid gap-2 sm:grid-cols-3">
@@ -124,20 +117,17 @@ function EmergencyDial() {
             <li key={contact.id}>
               <a
                 href={`tel:${contact.number}`}
-                className="group flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-800/80 p-3 transition active:scale-[0.98] hover:border-destructive/50 hover:bg-slate-800"
+                className="group flex items-center gap-2 rounded-xl border border-border bg-muted/40 p-2.5 transition active:scale-[0.98] hover:bg-muted"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive transition group-hover:bg-destructive group-hover:text-white">
-                  <Icon className="h-5 w-5" aria-hidden />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                  <Icon className="h-4 w-4" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-lg font-bold leading-tight text-white">
+                  <span className="block text-sm font-bold leading-tight">
                     {contact.number}
                   </span>
-                  <span className="block truncate text-xs font-semibold text-slate-200">
+                  <span className="block truncate text-[10px] text-muted-foreground">
                     {contact.title}
-                  </span>
-                  <span className="block truncate text-[10px] text-slate-400">
-                    {contact.description}
                   </span>
                 </span>
               </a>
@@ -145,11 +135,6 @@ function EmergencyDial() {
           );
         })}
       </ul>
-
-      <p className="mt-3 text-[10px] leading-relaxed text-slate-400">
-        Números gratuitos válidos em todo o território brasileiro. Em celulares, toque no card para
-        ligar diretamente.
-      </p>
     </section>
   );
 }
@@ -183,8 +168,6 @@ function FavoritesPage() {
 
   return (
     <AppShell title="Favoritos" subtitle="Seus locais salvos">
-      <EmergencyDial />
-
       {isLoading ? (
         <FavoritesSkeleton />
       ) : favorites.length === 0 ? (
@@ -192,7 +175,6 @@ function FavoritesPage() {
       ) : (
         <>
           <ul className="space-y-3">
-
             {favorites.map((row) => (
               <li key={row.id} className="rounded-2xl border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -242,6 +224,8 @@ function FavoritesPage() {
               </li>
             ))}
           </ul>
+
+          <EmergencyDial />
         </>
       )}
     </AppShell>
