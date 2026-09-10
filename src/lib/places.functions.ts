@@ -8,9 +8,19 @@ const coords = {
 
 const nearbySchema = z.object({
   ...coords,
-  category: z.enum(["parques", "academias", "restaurantes"]),
+  category: z.enum(["parques", "academias", "restaurantes", "farmacias", "saude"]),
   radius: z.number().min(500).max(15000).default(3000),
 });
+
+const reverseSchema = z.object({ ...coords });
+
+/** Endereço legível a partir das coordenadas (Nominatim/OpenStreetMap). */
+export const reverseGeocode = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => reverseSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { reverseGeocodeCoords } = await import("./places.server");
+    return reverseGeocodeCoords(data.latitude, data.longitude);
+  });
 
 const detailsSchema = z.object({
   placeId: z.string().min(3).max(400),

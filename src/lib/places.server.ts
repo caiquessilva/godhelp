@@ -333,6 +333,50 @@ export async function suggestAddresses(query: string): Promise<AddressSuggestion
   return suggestions;
 }
 
+export interface ReverseAddress {
+  label: string;
+  street: string | null;
+  neighbourhood: string | null;
+  city: string | null;
+}
+
+/** Reverse geocoding gratuito via Nominatim, com cache curto em memória. */
+export async function reverseGeocodeCoords(
+  latitude: number,
+  longitude: number,
+): Promise<ReverseAddress | null> {
+  const key = `reverse:${latitude.toFixed(4)}:${longitude.toFixed(4)}`;
+  const cached = cacheGet<ReverseAddress>(key);
+  if (cached) return cached;
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=17` +
+      `&accept-language=pt-BR&lat=${latitude}&lon=${longitude}`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": "godhelp-app/1.0 (reverse)" },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!response.ok) return null;
+    const raw = (await response.json()) as {
+      display_name?: string;
+      address?: Record<string, string>;
+    };
+    const a = raw.address ?? {};
+    const street = a["road"] ?? a["pedestrian"] ?? a["footway"] ?? null;
+    const neighbourhood = a["suburb"] ?? a["neighbourhood"] ?? a["city_district"] ?? null;
+    const city = a["city"] ?? a["town"] ?? a["village"] ?? a["municipality"] ?? null;
+    const label =
+      [street, neighbourhood, city].filter(Boolean).join(", ") || raw.display_name || "";
+    if (!label) return null;
+    const value: ReverseAddress = { label, street, neighbourhood, city };
+    cacheSet(key, value);
+    return value;
+  } catch (error) {
+    console.error("Reverse geocoding indisponível", error);
+    return null;
+  }
+}
+
 export async function geocodeAddress(address: string) {
   try {
     return await geocodeAddressGoogle(address);
