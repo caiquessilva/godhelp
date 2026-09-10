@@ -1,4 +1,17 @@
-export type CategoryId = "parques" | "academias" | "restaurantes";
+export type CategoryId =
+  | "parques"
+  | "academias"
+  | "restaurantes"
+  | "farmacias"
+  | "saude";
+
+export const CATEGORY_IDS = [
+  "parques",
+  "academias",
+  "restaurantes",
+  "farmacias",
+  "saude",
+] as const;
 
 export interface CategoryInfo {
   id: CategoryId;
@@ -7,9 +20,11 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES: CategoryInfo[] = [
-  { id: "parques", label: "Parques", googleTypes: ["park"] },
   { id: "academias", label: "Academias", googleTypes: ["gym", "fitness_center"] },
+  { id: "parques", label: "Parques", googleTypes: ["park"] },
   { id: "restaurantes", label: "Restaurantes", googleTypes: ["restaurant"] },
+  { id: "farmacias", label: "Farmácias 24h", googleTypes: ["pharmacy", "drugstore"] },
+  { id: "saude", label: "Postos de Saúde", googleTypes: ["hospital", "doctor"] },
 ];
 
 export function categoryLabel(id: string): string {

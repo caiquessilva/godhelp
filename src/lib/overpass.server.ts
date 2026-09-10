@@ -19,12 +19,16 @@ const FILTERS: Record<CategoryId, string[]> = {
   parques: ['["leisure"="park"]', '["leisure"="garden"]'],
   academias: ['["leisure"="fitness_centre"]', '["amenity"="gym"]'],
   restaurantes: ['["amenity"="restaurant"]', '["amenity"="fast_food"]'],
+  farmacias: ['["amenity"="pharmacy"]', '["healthcare"="pharmacy"]'],
+  saude: ['["amenity"="clinic"]', '["amenity"="hospital"]', '["amenity"="doctors"]'],
 };
 
 const TYPE_LABELS: Record<CategoryId, string> = {
   parques: "Parque",
   academias: "Academia",
   restaurantes: "Restaurante",
+  farmacias: "Farmácia",
+  saude: "Posto de saúde",
 };
 
 async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
