@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as DoarRouteImport } from './routes/doar'
+import { Route as EmergenciaRouteImport } from './routes/emergencia'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
@@ -38,6 +39,11 @@ const AjustesRoute = AjustesRouteImport.update({
 const DoarRoute = DoarRouteImport.update({
   id: '/doar',
   path: '/doar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmergenciaRoute = EmergenciaRouteImport.update({
+  id: '/emergencia',
+  path: '/emergencia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritosRoute = FavoritosRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
+  '/emergencia': typeof EmergenciaRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
+  '/emergencia': typeof EmergenciaRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/ajustes': typeof AjustesRoute
   '/doar': typeof DoarRoute
+  '/emergencia': typeof EmergenciaRoute
   '/favoritos': typeof FavoritosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajustes'
     | '/doar'
+    | '/emergencia'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajustes'
     | '/doar'
+    | '/emergencia'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajustes'
     | '/doar'
+    | '/emergencia'
     | '/favoritos'
     | '/privacidade'
     | '/termos'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AjustesRoute: typeof AjustesRoute
   DoarRoute: typeof DoarRoute
+  EmergenciaRoute: typeof EmergenciaRoute
   FavoritosRoute: typeof FavoritosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/doar'
       fullPath: '/doar'
       preLoaderRoute: typeof DoarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/emergencia': {
+      id: '/emergencia'
+      path: '/emergencia'
+      fullPath: '/emergencia'
+      preLoaderRoute: typeof EmergenciaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favoritos': {
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AjustesRoute: AjustesRoute,
   DoarRoute: DoarRoute,
+  EmergenciaRoute: EmergenciaRoute,
   FavoritosRoute: FavoritosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
