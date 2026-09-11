@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, Navigation, Phone, Share2, Shield, Siren, Stethoscope } from "lucide-react";
+import { Heart, Navigation, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -71,72 +71,6 @@ async function shareFavorite(row: FavoriteRow) {
   } catch {
     /* usuário cancelou o compartilhamento */
   }
-}
-
-const EMERGENCY_CONTACTS = [
-  {
-    id: "policia",
-    number: "190",
-    title: "Polícia Militar",
-    description: "Segurança e ocorrências policiais",
-    icon: Shield,
-    tone: "emergency" as const,
-  },
-  {
-    id: "samu",
-    number: "192",
-    title: "SAMU",
-    description: "Emergência médica e socorro urgente",
-    icon: Stethoscope,
-    tone: "emergency" as const,
-  },
-  {
-    id: "bombeiros",
-    number: "193",
-    title: "Corpo de Bombeiros",
-    description: "Resgate, incêndios e acidentes",
-    icon: Siren,
-    tone: "emergency" as const,
-  },
-];
-
-function EmergencyDial() {
-  return (
-    <section className="mt-8 rounded-2xl border border-border bg-card p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Phone className="h-4 w-4 text-muted-foreground" aria-hidden />
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Emergência nacional · gratuito
-        </h2>
-      </div>
-
-      <ul className="grid gap-2 sm:grid-cols-3">
-        {EMERGENCY_CONTACTS.map((contact) => {
-          const Icon = contact.icon;
-          return (
-            <li key={contact.id}>
-              <a
-                href={`tel:${contact.number}`}
-                className="group flex items-center gap-2 rounded-xl border border-border bg-muted/40 p-2.5 transition active:scale-[0.98] hover:bg-muted"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                  <Icon className="h-4 w-4" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-bold leading-tight">
-                    {contact.number}
-                  </span>
-                  <span className="block truncate text-[10px] text-muted-foreground">
-                    {contact.title}
-                  </span>
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
 }
 
 function EmptyState() {
@@ -224,8 +158,6 @@ function FavoritesPage() {
               </li>
             ))}
           </ul>
-
-          <EmergencyDial />
         </>
       )}
     </AppShell>
