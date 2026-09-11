@@ -3,10 +3,13 @@ import { ClientOnly } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Info, List, Loader2, LocateFixed, Map as MapIcon, Search } from "lucide-react";
+import { Info, List, Loader2, LocateFixed, Map as MapIcon, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
+import { ExploreMenu } from "@/components/ExploreMenu";
+import { InstallBanner } from "@/components/InstallBanner";
+import { LocationHeader } from "@/components/LocationHeader";
 import { PlaceCard } from "@/components/PlaceCard";
 import { useGeo } from "@/hooks/useGeo";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -109,6 +112,7 @@ function NearbyPage() {
   const [category, setCategory] = useState<CategoryId>("parques");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [address, setAddress] = useState("");
+  const [keyword, setKeyword] = useState("");
   const [suggestions, setSuggestions] = useState<
     { id: string; label: string; latitude: number; longitude: number }[]
   >([]);
@@ -170,15 +174,25 @@ function NearbyPage() {
     queryKey: ["nearby", category, coords?.latitude, coords?.longitude, radius],
     enabled: Boolean(coords),
     staleTime: 5 * 60 * 1000,
-    queryFn: () =>
-      nearbyFn({
+    queryFn: () => {
+      if (!coords) return Promise.resolve([]);
+      return nearbyFn({
         data: {
-          latitude: coords!.latitude,
-          longitude: coords!.longitude,
+          latitude: coords.latitude,
+          longitude: coords.longitude,
           category,
           radius,
         },
-      }),
+      });
+    },
+  });
+
+  const normalizedKeyword = keyword.trim().toLocaleLowerCase("pt-BR");
+  const filteredPlaces = (placesQuery.data ?? []).filter((place) => {
+    if (!normalizedKeyword) return true;
+    return [place.name, place.address, place.typeLabel]
+      .filter(Boolean)
+      .some((value) => value?.toLocaleLowerCase("pt-BR").includes(normalizedKeyword));
   });
 
   const addressMutation = useMutation({
@@ -224,8 +238,14 @@ function NearbyPage() {
   const indicatorVisible = refreshing || pull > 0;
 
   return (
-    <AppShell title="Perto de mim" subtitle={coords?.label ?? "Onde você está agora"}>
-      <div className="relative">
+    <AppShell
+      title="Explorar"
+      subtitle="Utilidades perto de você"
+      action={<ExploreMenu />}
+    >
+      <LocationHeader coords={coords} status={status} onRefresh={locate} />
+
+      <div className="relative mt-3">
         <form
           className="flex items-center gap-2 rounded-2xl border border-input bg-card px-3 py-1.5 focus-within:border-primary"
           onSubmit={(event) => {
@@ -295,13 +315,13 @@ function NearbyPage() {
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {CATEGORIES.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setCategory(item.id)}
-            className={`flex-1 rounded-full px-2 py-3 text-sm font-semibold transition-colors ${
+            className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
               category === item.id
                 ? "bg-foreground text-background"
                 : "border border-border bg-card text-muted-foreground"
@@ -310,6 +330,31 @@ function NearbyPage() {
             {item.label}
           </button>
         ))}
+      </div>
+
+      <div className="relative mt-3">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <input
+          type="search"
+          value={keyword}
+          onChange={(event) => setKeyword(event.target.value)}
+          placeholder="Filtrar locais por nome ou serviço"
+          aria-label="Filtrar locais por nome ou serviço"
+          className="w-full rounded-2xl border border-input bg-card py-3 pl-10 pr-10 text-sm outline-none focus:border-primary"
+        />
+        {keyword ? (
+          <button
+            type="button"
+            onClick={() => setKeyword("")}
+            aria-label="Limpar filtro"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted-foreground"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
       </div>
 
       <div className="mt-3 flex gap-2 rounded-full border border-border bg-card p-1">
@@ -388,21 +433,23 @@ function NearbyPage() {
           <ClientOnly fallback={<MapSkeleton />}>
             <Suspense fallback={<MapSkeleton />}>
               <PlacesMap
-                places={placesQuery.data}
+                places={filteredPlaces}
                 center={{ latitude: coords.latitude, longitude: coords.longitude }}
                 category={category}
               />
             </Suspense>
           </ClientOnly>
-        ) : placesQuery.data.length === 0 ? (
+        ) : filteredPlaces.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Nada encontrado num raio de {radius / 1000} km.
+            {normalizedKeyword
+              ? "Nenhum local corresponde à sua busca."
+              : `Nada encontrado num raio de ${radius / 1000} km.`}
           </p>
         ) : (
           <>
-            <SourceNotice places={placesQuery.data} />
+            <SourceNotice places={filteredPlaces} />
             <ul className="space-y-3">
-              {placesQuery.data.slice(0, visibleCount).map((place) => (
+              {filteredPlaces.slice(0, visibleCount).map((place) => (
                 <PlaceCard
                   key={place.id}
                   place={place}
@@ -413,7 +460,7 @@ function NearbyPage() {
                 />
               ))}
             </ul>
-            {placesQuery.data.length > visibleCount ? (
+            {filteredPlaces.length > visibleCount ? (
               <button
                 type="button"
                 onClick={() => setVisibleCount((value) => value + PAGE_SIZE)}
@@ -425,6 +472,7 @@ function NearbyPage() {
           </>
         )}
       </div>
+      <InstallBanner />
     </AppShell>
   );
 }
